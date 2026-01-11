@@ -36,12 +36,12 @@ import NoPhoto from "../../../../img/no_photo.jpg";
 import { useNavigate } from 'react-router-dom';
 
 interface ISearchHit {
-    objectID: number,
+    id: number,
     name: string,
     price: number
 }
 
-const SearchHit = ({ objectID, name, price }: ISearchHit) => {
+const SearchHit = ({ id, name, price }: ISearchHit) => {
     const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
     const [photo, setPhoto] = React.useState(NoPhoto);
     const lang = useAppSelector(state => state.lang.lang);
@@ -55,7 +55,7 @@ const SearchHit = ({ objectID, name, price }: ISearchHit) => {
     const handleAddProduct = async () => {
         setIsSuccess(false);
 
-        const response = await addProductToCart(jwt.token, objectID, 1);
+        const response = await addProductToCart(jwt.token, id, 1);
 
         if (response.status) {
             if (response.status == 401) {
@@ -70,7 +70,7 @@ const SearchHit = ({ objectID, name, price }: ISearchHit) => {
 
     React.useEffect(() => {
         const getProductPhotoRequest = async () => {
-            const photoBlob = await getProductPhoto(objectID);
+            const photoBlob = await getProductPhoto(id);
 
             if (photoBlob.size > 0) {
                 setPhoto(URL.createObjectURL(photoBlob));
@@ -140,7 +140,7 @@ const SearchHit = ({ objectID, name, price }: ISearchHit) => {
                         className="card-image" 
                         src={photo} 
                         alt={getTranslation(lang, "product_image")}
-                        data-testid={"card-image-" + objectID}
+                        data-testid={"card-image-" + id}
                         style={{
                             objectFit: 'cover',
                             transition: 'transform 0.3s ease-in-out'

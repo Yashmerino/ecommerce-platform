@@ -49,10 +49,6 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env.API_BASE_URL': JSON.stringify(process.env.API_BASE_URL),
-      'process.env.ALGOLIA_APP_ID': JSON.stringify(process.env.ALGOLIA_APP_ID),
-      'process.env.ALGOLIA_API_KEY': JSON.stringify(process.env.ALGOLIA_API_KEY),
-      'process.env.ALGOLIA_INDEX_NAME': JSON.stringify(process.env.ALGOLIA_INDEX_NAME),
-      'process.env.ALGOLIA_USAGE': JSON.stringify(process.env.ALGOLIA_USAGE),
     }),
   ],
 };

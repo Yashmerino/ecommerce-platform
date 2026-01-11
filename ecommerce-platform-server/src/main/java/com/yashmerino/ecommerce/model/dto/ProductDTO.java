@@ -40,13 +40,13 @@ import java.util.Set;
  */
 @Getter
 @Setter
-@JsonPropertyOrder({"objectID", "name", "price", "categories"})
+@JsonPropertyOrder({"id", "name", "price", "categories"})
 public class ProductDTO {
 
     /**
      * Product's id.
      */
-    @JsonProperty("objectID")
+    @JsonProperty("id")
     private String id;
 
     /**

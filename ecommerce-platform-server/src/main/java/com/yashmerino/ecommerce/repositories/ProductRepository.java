@@ -41,6 +41,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * Return seller's products.
      *
      * @param userId is the seller's id.
+     *
      * @return List of Products.
      */
     @Query(
@@ -49,4 +50,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             nativeQuery = true
     )
     Page<Product> getProductsBySellerId(Long userId, Pageable pageable);
+
+    /**
+     * Returns products that contain the query in their name.
+     *
+     * @param query is the query.
+     * @param pageable is the pageable object.
+     *
+     * @return The page of products.
+     */
+    Page<Product> findByNameContaining(String query, Pageable pageable);
 }

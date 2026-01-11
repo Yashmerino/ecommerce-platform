@@ -122,9 +122,9 @@ const ProductsContainer = () => {
           {pagination.data.length > 0 ? (
             <Grid container spacing={3} justifyContent="center">
               {pagination.data.map(product => (
-                <Grid item key={product.objectID}>
+                <Grid item key={product.id}>
                   <ProductCard
-                    id={product.objectID}
+                    id={product.id}
                     title={product.name}
                     price={product.price}
                     categories={product.categories}

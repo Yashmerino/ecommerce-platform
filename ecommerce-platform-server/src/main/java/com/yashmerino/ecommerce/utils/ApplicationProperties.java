@@ -36,28 +36,4 @@ public class ApplicationProperties {
      */
     @Value("${jwt.secret}")
     public String jwtSecret;
-
-    /**
-     * Algolia private API key.
-     */
-    @Value("${algolia.usage:false}")
-    public boolean isAlgoliaUsed;
-
-    /**
-     * Algolia private API key.
-     */
-    @Value("${algolia.api.key}")
-    public String algoliaApiKey;
-
-    /**
-     * Algolia application id.
-     */
-    @Value("${algolia.app.id}")
-    public String algoliaApplicationId;
-
-    /**
-     * Algolia index's name.
-     */
-    @Value("${algolia.index.name}")
-    public String algoliaIndexName;
 }

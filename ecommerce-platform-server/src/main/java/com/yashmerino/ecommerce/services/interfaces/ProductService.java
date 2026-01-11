@@ -53,6 +53,16 @@ public interface ProductService {
     Page<Product> getAllProducts(Pageable pageable);
 
     /**
+     * Searches for products using a query.
+     *
+     * @param query is the query.
+     * @param pageable is the page object.
+     *
+     * @return <code>Page of Products</code>
+     */
+    Page<Product> search(String query, Pageable pageable);
+
+    /**
      * Saves a product.
      *
      * @param product is the product's object.

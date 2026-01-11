@@ -29,7 +29,6 @@ import { setCookie } from '../utils/Utils';
 import { updateTheme } from '../slices/themeSlice';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { ALGOLIA_USAGE } from '../../env-config';
 
 const Header = () => {
     const roles = useAppSelector(state => state.info.info.roles);
@@ -187,7 +186,7 @@ const Header = () => {
                                     </MenuItem>
                                 </>
                             )}
-                            {roles[0].name === "USER" && ALGOLIA_USAGE && (
+                            {roles[0].name === "USER" && (
                                 <MenuItem onClick={handleSearch}>
                                     <SearchIcon sx={{ mr: 1.5 }} />
                                     <Typography>{getTranslation(lang, "search")}</Typography>
@@ -329,7 +328,7 @@ const Header = () => {
                             </>
                         )}
 
-                        {roles[0].name === "USER" && ALGOLIA_USAGE && (
+                        {roles[0].name === "USER" && (
                             <Button
                                 startIcon={<SearchIcon />}
                                 onClick={handleSearch}

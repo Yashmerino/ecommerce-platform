@@ -49,7 +49,7 @@ public class JwtProvider {
     /**
      * Application properties.
      */
-    private ApplicationProperties applicationProperties;
+    private final ApplicationProperties applicationProperties;
 
     /**
      * Constructor.

@@ -37,7 +37,7 @@ import { getTranslation } from '../../../../i18n/i18n';
 import NoPhoto from "../../../../img/no_photo.jpg";
 import { useNavigate } from 'react-router-dom';
 
-const MyProductCard = ({ objectID, name, price, categories, description }: Product) => {
+const MyProductCard = ({ id, name, price, categories, description }: Product) => {
     const [isDeleted, setIsDeleted] = React.useState<boolean>(false);
     const [photo, setPhoto] = React.useState(NoPhoto);
     const navigate = useNavigate();
@@ -53,7 +53,7 @@ const MyProductCard = ({ objectID, name, price, categories, description }: Produ
         event.stopPropagation();
         setIsDeleted(false);
 
-        const response = await deleteProduct(jwt.token, objectID);
+        const response = await deleteProduct(jwt.token, id);
 
         if (response.status) {
             if (response.status == 401) {
@@ -70,7 +70,7 @@ const MyProductCard = ({ objectID, name, price, categories, description }: Produ
 
     React.useEffect(() => {
         const getProductPhotoRequest = async () => {
-            const photoBlob = await getProductPhoto(objectID);
+            const photoBlob = await getProductPhoto(id);
 
             if (photoBlob.size > 0) {
                 setPhoto(URL.createObjectURL(photoBlob));
@@ -83,7 +83,7 @@ const MyProductCard = ({ objectID, name, price, categories, description }: Produ
     const handleEditProduct = () => {
         navigate("/product/edit", {
             state: {
-                id: objectID,
+                id: id,
                 title: name,
                 categories: categories,
                 price: price,
@@ -139,7 +139,7 @@ const MyProductCard = ({ objectID, name, price, categories, description }: Produ
                     }}
                     src={photo} 
                     alt="product-image" 
-                    data-testid={"card-image-" + objectID}
+                    data-testid={"card-image-" + id}
                 />
             </Box>
             

@@ -20,7 +20,7 @@ describe("Search Hit Card Tests", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter>
-                    <SearchHit objectID={1} price={2.5} name="Apple" key={1} />
+                    <SearchHit id={1} price={2.5} name="Apple" key={1} />
                 </MemoryRouter>
             </Provider>
         );
@@ -46,7 +46,7 @@ describe("Search Hit Card Tests", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter>
-                    <SearchHit objectID={1} price={2.5} name="Apple" key={1} />
+                    <SearchHit id={1} price={2.5} name="Apple" key={1} />
                 </MemoryRouter>
             </Provider>
         );

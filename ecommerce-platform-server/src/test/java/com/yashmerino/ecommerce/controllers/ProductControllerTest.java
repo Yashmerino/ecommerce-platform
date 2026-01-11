@@ -129,7 +129,7 @@ class ProductControllerTest {
 
         result = mvc.perform(get("/api/product/3")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"objectID\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null}"));
+        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null}"));
     }
 
     /**
@@ -157,7 +157,7 @@ class ProductControllerTest {
 
         result = mvc.perform(get("/api/product")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"objectID\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null},{\"objectID\":\"2\",\"name\":\"Laptop\",\"price\":3.0,\"categories\":[],\"description\":null},{\"objectID\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null},{\"objectID\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}]"));
+        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null},{\"id\":\"2\",\"name\":\"Laptop\",\"price\":3.0,\"categories\":[],\"description\":null},{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null},{\"id\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}]"));
     }
 
     /**
@@ -296,7 +296,7 @@ class ProductControllerTest {
 
         result = mvc.perform(get("/api/product/3")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"objectID\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[{"));
+        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[{"));
         assertTrue(result.getResponse().getContentAsString().contains("{\"id\":1,\"name\":\"Digital Services\"}"));
         assertTrue(result.getResponse().getContentAsString().contains("{\"id\":2,\"name\":\"Cosmetics and Body Care\"}"));
     }
@@ -343,11 +343,11 @@ class ProductControllerTest {
 
         result = mvc.perform(get("/api/product/seller/seller")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"objectID\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null},{\"objectID\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null},{\"objectID\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}]"));
+        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null},{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null},{\"id\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}]"));
 
         result = mvc.perform(get("/api/product/seller/anotherSeller")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"objectID\":\"2\",\"name\":\"Laptop\",\"price\":3.0,\"categories\":[],\"description\":null}]"));
+        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":\"2\",\"name\":\"Laptop\",\"price\":3.0,\"categories\":[],\"description\":null}]"));
     }
 
     /**
@@ -479,7 +479,7 @@ class ProductControllerTest {
     void updateProductTest() throws Exception {
         MvcResult result = mvc.perform(get("/api/product/1")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"objectID\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null}"));
+        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null}"));
 
         productDTO.setName("Android");
         productDTO.setPrice(2.5);
@@ -497,7 +497,7 @@ class ProductControllerTest {
 
         result = mvc.perform(get("/api/product/1")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"objectID\":\"1\",\"name\":\"Android\",\"price\":2.5,\"categories\":[{\"id\":1,\"name\":\"Digital Services\"}],\"description\":null}"));
+        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"1\",\"name\":\"Android\",\"price\":2.5,\"categories\":[{\"id\":1,\"name\":\"Digital Services\"}],\"description\":null}"));
     }
 
     /**
@@ -521,7 +521,7 @@ class ProductControllerTest {
 
         result = mvc.perform(get("/api/product/1")).andExpect(status().isOk()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"objectID\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null}"));
+        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null}"));
     }
 
     /**
@@ -625,5 +625,33 @@ class ProductControllerTest {
         // Should be empty
         assertFalse(content2.contains("Phone"));
         assertFalse(content2.contains("Laptop"));
+    }
+
+    /**
+     * Test search for products.
+     *
+     * @throws Exception if something goes wrong.
+     */
+    @Test
+    @WithMockUser(username = "seller", authorities = {"SELLER"})
+    void searchProductsTest() throws Exception {
+        MvcResult result = mvc.perform(post("/api/product")
+                .content(objectMapper.writeValueAsString(productDTO)).contentType(
+                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
+
+        productDTO.setName("Banana");
+        productDTO.setPrice(1.25);
+
+        result = mvc.perform(post("/api/product")
+                .content(objectMapper.writeValueAsString(productDTO)).contentType(
+                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":4}"));
+
+        result = mvc.perform(get("/api/product/search?query=Banana")).andExpect(status().isOk()).andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}"));
     }
 }

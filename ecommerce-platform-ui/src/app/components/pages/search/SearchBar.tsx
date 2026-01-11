@@ -2,17 +2,30 @@ import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { useSearchBox } from 'react-instantsearch-hooks-web';
 import { useAppSelector } from '../../../hooks';
 import { getTranslation } from '../../../../i18n/i18n';
 
-function SearchBar(props: any) {
-    const {
-        query,
-        refine,
-    } = useSearchBox(props);
+interface SearchBarProps {
+    onSearch: (query: string) => void;
+}
 
+function SearchBar({ onSearch }: SearchBarProps) {
+    const [query, setQuery] = React.useState('');
     const lang = useAppSelector(state => state.lang.lang);
+    const searchTimeoutRef = React.useRef<NodeJS.Timeout>();
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.currentTarget.value;
+        setQuery(value);
+
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            onSearch(value);
+        }, 300);
+    };
 
     return (
         <Paper
@@ -36,6 +49,7 @@ function SearchBar(props: any) {
                     boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.1)',
                 }
             }}
+            onSubmit={(e) => e.preventDefault()}
         >
             <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
             <InputBase
@@ -46,10 +60,10 @@ function SearchBar(props: any) {
                         fontSize: '1.1rem',
                     }
                 }}
-                placeholder={getTranslation(lang, "search")}
-                inputProps={{ 'aria-label': getTranslation(lang, "search") }}
+                placeholder={getTranslation(lang, 'search')}
+                inputProps={{ 'aria-label': getTranslation(lang, 'search') }}
                 value={query}
-                onChange={(e) => refine(e.currentTarget.value)}
+                onChange={handleInputChange}
             />
         </Paper>
     );

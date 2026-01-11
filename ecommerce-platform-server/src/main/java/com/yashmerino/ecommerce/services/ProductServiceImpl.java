@@ -110,6 +110,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
+     * Searches for products using a query.
+     *
+     * @param query is the query.
+     * @param pageable is the page object.
+     *
+     * @return <code>Page of Products</code>
+     */
+    @Override
+    public Page<Product> search(String query, Pageable pageable) {
+        return productRepository.findByNameContaining(query, pageable);
+    }
+
+    /**
      * Saves a product.
      *
      * @param product is the product's object.

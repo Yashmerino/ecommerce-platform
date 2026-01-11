@@ -29,12 +29,10 @@ import com.yashmerino.ecommerce.model.dto.ProductDTO;
 import com.yashmerino.ecommerce.model.dto.SuccessDTO;
 import com.yashmerino.ecommerce.model.dto.SuccessWithIdDTO;
 import com.yashmerino.ecommerce.model.dto.*;
-import com.yashmerino.ecommerce.services.interfaces.AlgoliaService;
 import com.yashmerino.ecommerce.services.interfaces.ProductService;
 import com.yashmerino.ecommerce.swagger.SwaggerConfig;
 import com.yashmerino.ecommerce.swagger.SwaggerHttpStatus;
 import com.yashmerino.ecommerce.swagger.SwaggerMessages;
-import com.yashmerino.ecommerce.utils.ApplicationProperties;
 import com.yashmerino.ecommerce.utils.RequestBodyToEntityConverter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,6 +43,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -74,26 +73,12 @@ public class ProductController {
     private final ProductService productService;
 
     /**
-     * Algolia service.
-     */
-    private final AlgoliaService algoliaService;
-
-    /**
-     * Application's properties.
-     */
-    private final ApplicationProperties applicationProperties;
-
-    /**
      * Constructor.
      *
      * @param productService        is the products' service.
-     * @param algoliaService        is the Algolia service.
-     * @param applicationProperties is the application's properties.
      */
-    public ProductController(ProductService productService, AlgoliaService algoliaService, ApplicationProperties applicationProperties) {
+    public ProductController(ProductService productService) {
         this.productService = productService;
-        this.algoliaService = algoliaService;
-        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -123,10 +108,6 @@ public class ProductController {
         successDTO.setStatus(200);
         successDTO.setMessage("product_added_successfully");
         successDTO.setId(productId);
-
-        if (applicationProperties.isAlgoliaUsed) {
-            algoliaService.addProductToIndex(convertToProductDTO(productService.getProduct(productId)));
-        }
 
         return new ResponseEntity<>(successDTO, HttpStatus.OK);
     }
@@ -230,6 +211,45 @@ public class ProductController {
     }
 
     /**
+     * Searches for products by query.
+     *
+     * @param pageable is the page data.
+     *
+     * @return <code>Page of ProductDTOs</code>.
+     */
+    @Operation(summary = "Searches for products by query.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = SwaggerHttpStatus.OK, description = SwaggerMessages.RETURN_PRODUCTS,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.BAD_REQUEST, description = SwaggerMessages.BAD_REQUEST,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.FORBIDDEN, description = SwaggerMessages.FORBIDDEN,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.UNAUTHORIZED, description = SwaggerMessages.UNAUTHORIZED,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.INTERNAL_SERVER_ERROR, description = SwaggerMessages.INTERNAL_SERVER_ERROR,
+                    content = @Content)})
+    @GetMapping("/search")
+    public PaginatedDTO<ProductDTO> search(@RequestParam(name = "query") String query, Pageable pageable) {
+        Page<Product> page = productService.search(query, pageable);
+
+        List<ProductDTO> products = page.getContent().stream()
+                .map(RequestBodyToEntityConverter::convertToProductDTO)
+                .toList();
+
+        PaginatedDTO<ProductDTO> paginated = new PaginatedDTO<>();
+        paginated.setData(products);
+        paginated.setCurrentPage(page.getNumber());
+        paginated.setTotalPages(page.getTotalPages());
+        paginated.setTotalItems(page.getTotalElements());
+        paginated.setPageSize(page.getSize());
+        paginated.setHasNext(page.hasNext());
+        paginated.setHasPrevious(page.hasPrevious());
+
+        return paginated;
+    }
+
+    /**
      * Returns all the seller's products.
      *
      * @param username is the seller's username.
@@ -295,10 +315,6 @@ public class ProductController {
         SuccessDTO successDTO = new SuccessDTO();
         successDTO.setStatus(200);
         successDTO.setMessage("product_deleted_successfully");
-
-        if (applicationProperties.isAlgoliaUsed) {
-            algoliaService.deleteProductFromIndex(id);
-        }
 
         return new ResponseEntity<>(successDTO, HttpStatus.OK);
     }
@@ -379,10 +395,6 @@ public class ProductController {
         SuccessDTO successDTO = new SuccessDTO();
         successDTO.setStatus(200);
         successDTO.setMessage("product_updated_successfully");
-
-        if (applicationProperties.isAlgoliaUsed) {
-            algoliaService.updateProduct(convertToProductDTO(productService.getProduct(id)));
-        }
 
         return new ResponseEntity<>(successDTO, HttpStatus.OK);
     }

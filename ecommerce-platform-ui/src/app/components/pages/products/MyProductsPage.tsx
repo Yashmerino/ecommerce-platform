@@ -110,8 +110,8 @@ const ProductsContainer = () => {
               <Box sx={{ overflowY: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {pagination.data.map((product) => (
                   <MyProductCard
-                    key={product.objectID}
-                    objectID={product.objectID}
+                    key={product.id}
+                    id={product.id}
                     name={product.name}
                     price={product.price}
                     categories={product.categories}

@@ -236,3 +236,30 @@ export const updateProduct = async (token: string, id: number, name: string, cat
 
     return response.json();
 }
+
+/**
+ * API Request to search for products.
+ * @param token The JWT Token.
+ * @param query The search query.
+ * @param page The page number.
+ * @param size The page size.
+ * @returns Response with paginated products.
+ */
+export const searchProducts = async (token: string, query: string, page = 0, size = 10) => {
+    const response = await fetch(
+        `${API_BASE_URL}/api/product/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`,
+        {
+            headers: { Authorization: `Bearer ${token}` },
+        }
+    );
+
+    if (response.status === 401) {
+        return response;
+    }
+
+    if (!response.ok) {
+        return response;
+    }
+
+    return response.json();
+};
