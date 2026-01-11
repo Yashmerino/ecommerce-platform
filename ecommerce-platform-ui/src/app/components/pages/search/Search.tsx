@@ -40,31 +40,16 @@ function Search() {
 
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const resp = await searchProducts(jwt.token, query, page, 10);
-
-            // searchProducts may return either a parsed JSON (when helper parsed it)
-            // or the raw Response object. Normalize both cases into `data`.
-            let data: any = null;
-            if (!resp) {
-                data = null;
-            } else if (typeof resp === 'object' && 'data' in resp) {
-                // already parsed JSON
-                data = resp;
-            } else if (typeof resp === 'object' && 'ok' in resp) {
-                // raw Response
-                if (resp.ok) {
-                    data = await resp.json();
-                }
-            }
-
-            if (data) {
+            const response = await searchProducts(jwt.token, query, page, 10);
+            if (response.ok) {
+                const data = await response.json();
                 setState(prev => ({
                     ...prev,
                     query,
                     results: data.data || [],
-                    page: data.currentPage || 0,
-                    totalPages: data.totalPages || 0,
-                    totalItems: data.totalItems || 0,
+                    page: data.currentPage,
+                    totalPages: data.totalPages,
+                    totalItems: data.totalItems,
                     loading: false,
                 }));
             } else {
