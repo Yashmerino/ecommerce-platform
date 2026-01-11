@@ -34,12 +34,12 @@ jobs:
         run: mvn verify -Pcoverage
       - name: Install UI dependencies
         run: npm install
-        working-directory: ./online-shop-ui
+        working-directory: ./ecommerce-platform-ui
       - name: Test and coverage UI 
         run: npm test -- --coverage
-        working-directory: ./online-shop-ui
+        working-directory: ./ecommerce-platform-ui
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Yashmerino_online-shop
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Yashmerino_ecommerce-platform

@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.yashmerino</groupId>
-    <artifactId>online-shop</artifactId>
+    <artifactId>ecommerce-platform</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>online-shop-ui</module>
-        <module>online-shop-server</module>
-        <module>online-shop-it</module>
+        <module>ecommerce-platform-ui</module>
+        <module>ecommerce-platform-server</module>
+        <module>ecommerce-platform-it</module>
     </modules>
 
     <properties>

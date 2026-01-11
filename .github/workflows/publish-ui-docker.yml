@@ -21,9 +21,9 @@ jobs:
 
     - name: Build and push
       run: |
-        cd online-shop-ui
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/online-shop-ui:latest .
-        docker push ${{ secrets.DOCKER_USERNAME }}/online-shop-ui:latest
+        cd ecommerce-platform-ui
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-platform-ui:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-platform-ui:latest
 
     - name: Logout from Docker Hub
       run: docker logout

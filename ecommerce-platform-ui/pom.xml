@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.yashmerino</groupId>
+        <artifactId>ecommerce-platform</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ecommerce-platform-ui</artifactId>
+
+    <properties>
+        <sonar.sources>src</sonar.sources>
+        <sonar.coverage.exclusions>
+            src/reportWebVitals.ts,
+            setupTests.ts,
+            src/index.tsx,
+            src/app/App.tsx,
+            src/app/hooks.ts,
+            src/store/store.ts,
+            src/app/Main.tsx,
+            src/env-config.ts,
+            src/__tests__/*,
+            src/app/api/AuthRequest.ts,
+            src/app/api/CartItemsRequest.ts,
+            src/app/api/CategoryRequest.ts,
+            src/app/api/ProductRequest.ts,
+            src/app/api/UserRequest.ts,
+            src/app/components/pages/search/Search.tsx,
+            src/app/components/pages/search/SearchPage.tsx
+            src/app/components/pages/search/SearchHits.tsx
+            src/app/components/pages/search/SearchBar.tsx
+        </sonar.coverage.exclusions>
+        <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+</project>

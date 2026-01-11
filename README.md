@@ -4,7 +4,7 @@
 
 <p align="center"><img src="https://static.vecteezy.com/system/resources/previews/009/848/288/original/verified-shop-online-store-3d-illustration-for-ecommerce-icon-free-png.png" alt="sms logo" height=225 width=225></p>
 
-Ecommerce Platform is a pet project made using Spring Boot and React. It uses a MySQL database to store the user, seller and products data. Online shop uses JWT for the authorization system and supports 3 languages:
+Ecommerce Platform is a pet project made using Spring Boot and React. It uses a MySQL database to store the user, seller and products data. Ecommerce Platform uses JWT for the authorization system and supports 3 languages:
 * English
 * Romanian
 * Russian

@@ -21,9 +21,9 @@ jobs:
 
     - name: Build and push Server Docker image
       run: |
-        cd online-shop-server
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/online-shop-server:latest .
-        docker push ${{ secrets.DOCKER_USERNAME }}/online-shop-server:latest
+        cd ecommerce-platform-server
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-platform-server:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-platform-server:latest
 
     - name: Logout from Docker Hub
       run: docker logout
