@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * Tests for {@link CartItemController}
@@ -62,9 +63,14 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void getCartItemTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/cartItem/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":1,\"productId\":1,\"name\":\"Phone\",\"price\":5.0,\"cartId\":1,\"quantity\":1}"));
+        mvc.perform(get("/api/cartItem/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.productId").value(1))
+                .andExpect(jsonPath("$.name").value("Phone"))
+                .andExpect(jsonPath("$.price").value(5.0))
+                .andExpect(jsonPath("$.cartId").value(1))
+                .andExpect(jsonPath("$.quantity").value(1));
     }
 
     /**
@@ -75,9 +81,10 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "anotherUser", authorities = {"USER"})
     void getCartItemWrongUserTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/cartItem/1")).andExpect(status().isForbidden()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":403,\"error\":\"access_denied\"}"));
+        mvc.perform(get("/api/cartItem/1"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("access_denied"));
     }
 
     /**
@@ -88,9 +95,10 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void deleteCartItemTest() throws Exception {
-        MvcResult result = mvc.perform(delete("/api/cartItem/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"cartitem_deleted_successfully\"}"));
+        mvc.perform(delete("/api/cartItem/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("cartitem_deleted_successfully"));
     }
 
     /**
@@ -101,9 +109,10 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "anotherUser", authorities = {"USER"})
     void deleteCartItemWrongUserTest() throws Exception {
-        MvcResult result = mvc.perform(delete("/api/cartItem/1")).andExpect(status().isForbidden()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":403,\"error\":\"access_denied\"}"));
+        mvc.perform(delete("/api/cartItem/1"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("access_denied"));
     }
 
     /**
@@ -114,13 +123,14 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void changeQuantityTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/cartItem/1/quantity?quantity=5")).andExpect(status().isOk()).andReturn();
+        mvc.perform(post("/api/cartItem/1/quantity?quantity=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("quantity_changed_successfully"));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"quantity_changed_successfully\"}"));
-
-        result = mvc.perform(get("/api/cartItem/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":1,\"productId\":1,\"name\":\"Phone\",\"price\":5.0,\"cartId\":1,\"quantity\":5}"));
+        mvc.perform(get("/api/cartItem/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quantity").value(5));
     }
 
     /**
@@ -131,9 +141,10 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "anotherUser", authorities = {"USER"})
     void changeQuantityWrongUserTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/cartItem/1/quantity?quantity=5")).andExpect(status().isForbidden()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":403,\"error\":\"access_denied\"}"));
+        mvc.perform(post("/api/cartItem/1/quantity?quantity=5"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("access_denied"));
     }
 
     /**
@@ -144,9 +155,11 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void getCartItemsTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/cartItem?username=user")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":1,\"productId\":1,\"name\":\"Phone\",\"price\":5.0,\"cartId\":1,\"quantity\":1}]"));
+        mvc.perform(get("/api/cartItem?username=user"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value(1))
+                .andExpect(jsonPath("$.data[0].productId").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Phone"));
     }
 
     /**
@@ -157,9 +170,10 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "anotherUser", authorities = {"USER"})
     void getCartItemsWrongUserTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/cartItem?username=user")).andExpect(status().isForbidden()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":403,\"error\":\"access_denied\"}"));
+        mvc.perform(get("/api/cartItem?username=user"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("access_denied"));
     }
 
     /**
@@ -170,9 +184,10 @@ class CartItemControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void changeQuantityToNegativeTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/cartItem/1/quantity?quantity=-4")).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"changeQuantity.quantity\",\"message\":\"Quantity should be greater or equal to 1.\"}]}"));
+        mvc.perform(post("/api/cartItem/1/quantity?quantity=-4"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("changeQuantity.quantity"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("Quantity should be greater or equal to 1."));
     }
 
     @Test

@@ -46,6 +46,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * Tests for {@link OrderController}
@@ -88,11 +89,13 @@ class OrderControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void placeOrderTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/order")
+        mvc.perform(post("/api/order")
                 .content(objectMapper.writeValueAsString(orderDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"order_placed_successfully\",\"id\":2}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("order_placed_successfully"))
+                .andExpect(jsonPath("$.id").value(2));
     }
 
     /**

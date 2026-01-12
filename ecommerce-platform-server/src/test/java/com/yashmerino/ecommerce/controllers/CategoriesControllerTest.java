@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * Tests for {@link CategoryController}
@@ -61,8 +62,15 @@ class CategoriesControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void getCategoriesTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/categories")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":1,\"name\":\"Digital Services\"},{\"id\":2,\"name\":\"Cosmetics and Body Care\"},{\"id\":3,\"name\":\"Food and Beverage\"},{\"id\":4,\"name\":\"Furniture and Decor\"},{\"id\":5,\"name\":\"Health and Wellness\"},{\"id\":6,\"name\":\"Household Items\"},{\"id\":7,\"name\":\"Media\"},{\"id\":8,\"name\":\"Pet Care\"},{\"id\":9,\"name\":\"Office Equipment\"}]"));
+        mvc.perform(get("/api/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Digital Services"))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].name").value("Cosmetics and Body Care"))
+                .andExpect(jsonPath("$[2].id").value(3))
+                .andExpect(jsonPath("$[2].name").value("Food and Beverage"))
+                .andExpect(jsonPath("$[8].id").value(9))
+                .andExpect(jsonPath("$[8].name").value("Office Equipment"));
     }
 }

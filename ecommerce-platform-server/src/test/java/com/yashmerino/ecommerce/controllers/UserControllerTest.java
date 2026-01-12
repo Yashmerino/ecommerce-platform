@@ -48,6 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -79,9 +80,11 @@ class UserControllerTest {
      */
     @Test
     void getUserInfoTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/user/seller")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"roles\":[{\"id\":3,\"name\":\"SELLER\"}],\"email\":null}"));
+        mvc.perform(get("/api/user/seller"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles[0].id").value(3))
+                .andExpect(jsonPath("$.roles[0].name").value("SELLER"))
+                .andExpect(jsonPath("$.email").doesNotExist());
     }
 
     /**
@@ -91,9 +94,10 @@ class UserControllerTest {
      */
     @Test
     void getUserInfoNonExistingUsernameTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/user/error")).andExpect(status().isNotFound()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":404,\"error\":\"username_not_found\"}"));
+        mvc.perform(get("/api/user/error"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("username_not_found"));
     }
 
     /**
@@ -114,9 +118,10 @@ class UserControllerTest {
                 Files.readAllBytes(photoPath)
         );
 
-        MvcResult result = mvc.perform(multipart("/api/user/user/photo").file(photo)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"user_photo_updated_successfully\"}"));
+        mvc.perform(multipart("/api/user/user/photo").file(photo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("user_photo_updated_successfully"));
     }
 
     /**
@@ -158,9 +163,10 @@ class UserControllerTest {
                 Files.readAllBytes(photoPath)
         );
 
-        MvcResult result = mvc.perform(multipart("/api/user/seller/photo").file(photo)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"user_photo_updated_successfully\"}"));
+        mvc.perform(multipart("/api/user/seller/photo").file(photo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("user_photo_updated_successfully"));
     }
 
     /**
@@ -183,7 +189,10 @@ class UserControllerTest {
 
         MvcResult result = mvc.perform(multipart("/api/user/user/photo").file(photo)).andExpect(status().isForbidden()).andReturn();
 
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":403,\"error\":\"access_denied\"}"));
+        mvc.perform(multipart("/api/user/user/photo").file(photo))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("access_denied"));
     }
 
     /**
@@ -235,10 +244,11 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("new@mail.com");
 
-        MvcResult result = mvc.perform(put("/api/user/user").content(objectMapper.writeValueAsString(userDTO)).contentType(
-                APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"user_information_updated_successfully\"}"));
+        mvc.perform(put("/api/user/user").content(objectMapper.writeValueAsString(userDTO)).contentType(
+                APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("user_information_updated_successfully"));
     }
 
     /**
@@ -267,10 +277,11 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("new@mail.com");
 
-        MvcResult result = mvc.perform(put("/api/user/seller").content(objectMapper.writeValueAsString(userDTO)).contentType(
-                APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"user_information_updated_successfully\"}"));
+        mvc.perform(put("/api/user/seller").content(objectMapper.writeValueAsString(userDTO)).contentType(
+                APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("user_information_updated_successfully"));
     }
 
     /**
@@ -284,10 +295,11 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("new@mail.com");
 
-        MvcResult result = mvc.perform(put("/api/user/ERROR").content(objectMapper.writeValueAsString(userDTO)).contentType(
-                APPLICATION_JSON)).andExpect(status().isNotFound()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":404,\"error\":\"username_not_found\"}"));
+        mvc.perform(put("/api/user/ERROR").content(objectMapper.writeValueAsString(userDTO)).contentType(
+                APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("username_not_found"));
     }
 
     /**
@@ -301,9 +313,10 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("new@mail.com");
 
-        MvcResult result = mvc.perform(put("/api/user/seller").content(objectMapper.writeValueAsString(userDTO)).contentType(
-                APPLICATION_JSON)).andExpect(status().isForbidden()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":403,\"error\":\"access_denied\"}"));
+        mvc.perform(put("/api/user/seller").content(objectMapper.writeValueAsString(userDTO)).contentType(
+                APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("access_denied"));
     }
 }

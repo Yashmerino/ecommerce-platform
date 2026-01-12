@@ -46,6 +46,8 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import org.hamcrest.Matchers;
 
 /**
  * Tests {@link AuthController} endpoints.
@@ -99,11 +101,11 @@ class AuthControllerTest {
      */
     @Test
     void registerSuccessfulTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk()).andReturn();
-
-        String content = result.getResponse().getContentAsString();
-        assertTrue(content.contains("{\"status\":200,\"message\":\"user_registered_successfully\"}"));
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("user_registered_successfully"));
     }
 
     /**
@@ -116,10 +118,11 @@ class AuthControllerTest {
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
 
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isConflict()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":409,\"error\":\"username_taken\"}"));
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("username_taken"));
     }
 
     /**
@@ -130,10 +133,11 @@ class AuthControllerTest {
     void registerNoSignEmailTest() throws Exception {
         registerDTO.setEmail("nosign_email");
 
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"email\",\"message\":\"email_is_invalid\"}]}"));
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("email"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("email_is_invalid"));
     }
 
     /**
@@ -145,11 +149,11 @@ class AuthControllerTest {
     void registerNoUsername() throws Exception {
         registerDTO.setUsername("");
 
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"username\",\"message\":\"username_is_required\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"username\",\"message\":\"username_invalid_length\"}"));
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'username' && @.message == 'username_is_required')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'username' && @.message == 'username_invalid_length')]").exists());
     }
 
     /**
@@ -171,11 +175,11 @@ class AuthControllerTest {
     void registerNoPasswordTest() throws Exception {
         registerDTO.setPassword("");
 
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"password\",\"message\":\"password_invalid_length\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"password\",\"message\":\"password_is_required\"}"));
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'password' && @.message == 'password_invalid_length')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'password' && @.message == 'password_is_required')]").exists());
     }
 
     /**
@@ -188,11 +192,10 @@ class AuthControllerTest {
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
 
-        MvcResult result = mvc.perform(post("/api/auth/login").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO))).andExpect(status().isOk()).andReturn();
-
-        String content = result.getResponse().getContentAsString();
-        assertTrue(content.contains("Bearer "));
+        mvc.perform(post("/api/auth/login").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenType").value(org.hamcrest.Matchers.containsString("Bearer ")));
     }
 
     /**
@@ -202,10 +205,11 @@ class AuthControllerTest {
      */
     @Test
     void usernameDoesntExistTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/auth/login").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO))).andExpect(status().isNotFound()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":404,\"error\":\"username_not_found\"}"));
+        mvc.perform(post("/api/auth/login").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("username_not_found"));
     }
 
     /**
@@ -220,10 +224,11 @@ class AuthControllerTest {
 
         loginDTO.setUsername("");
 
-        MvcResult result = mvc.perform(post("/api/auth/login").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO))).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"username\",\"message\":\"username_is_required\"}]}"));
+        mvc.perform(post("/api/auth/login").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("username"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("username_is_required"));
     }
 
     /**
@@ -238,10 +243,11 @@ class AuthControllerTest {
 
         loginDTO.setPassword("");
 
-        MvcResult result = mvc.perform(post("/api/auth/login").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO))).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"password\",\"message\":\"password_is_required\"}]}"));
+        mvc.perform(post("/api/auth/login").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("password"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("password_is_required"));
     }
 
     /**
@@ -253,9 +259,10 @@ class AuthControllerTest {
     void registerUsernameInvalidLengthTest() throws Exception {
         registerDTO.setUsername("gaerghetrhatetaewrvtuaewtgarhgyjaregdwafdawfawfawdawfarhgyjaregdwafdawfawfawdawfarhgyjaregdwafdawfawfawdawfarhgyjaregdwafdawfawfawdawfarhgyjaregdwafdawfawfawdawfwefawefaewfwaefawefawfawfawdawfwefawefaewfwaefawefawfawfawdawfwefawefaewfwaefawefawfawfawdawfwefawefaewfwaefawefawehtyjargeytjgaeRJGYAERKGFHAGERKUGHERUKGHARUKGhgukraehgkuerahkughkurgaehukg");
 
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType(
-                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"username\",\"message\":\"username_invalid_length\"}]}"));
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("username"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("username_invalid_length"));
     }
 }

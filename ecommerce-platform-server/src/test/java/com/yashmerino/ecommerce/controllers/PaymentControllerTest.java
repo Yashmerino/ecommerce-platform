@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * Tests for {@link PaymentController}
@@ -61,9 +62,10 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void sendPayEventTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/payment/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"payment_sent_successfully\"}"));
+        mvc.perform(post("/api/payment/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("payment_sent_successfully"));
     }
 
     /**

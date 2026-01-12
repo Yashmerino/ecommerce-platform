@@ -51,6 +51,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * Tests for {@link ProductController}
@@ -93,11 +94,13 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void addValidProductTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(3));
     }
 
     /**
@@ -121,15 +124,21 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void getProductTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(3));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
-
-        result = mvc.perform(get("/api/product/3")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null}"));
+        mvc.perform(get("/api/product/3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("3"))
+                .andExpect(jsonPath("$.name").value("Product"))
+                .andExpect(jsonPath("$.price").value(2.5))
+                .andExpect(jsonPath("$.categories").isArray())
+                .andExpect(jsonPath("$.description").doesNotExist());
     }
 
     /**
@@ -140,24 +149,35 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void getAllProductsTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(3));
 
         productDTO.setName("Banana");
         productDTO.setPrice(1.25);
 
-        result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(4));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":4}"));
-
-        result = mvc.perform(get("/api/product")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null},{\"id\":\"2\",\"name\":\"Laptop\",\"price\":3.0,\"categories\":[],\"description\":null},{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null},{\"id\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}]"));
+        mvc.perform(get("/api/product"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value("1"))
+                .andExpect(jsonPath("$.data[0].name").value("Phone"))
+                .andExpect(jsonPath("$.data[1].id").value("2"))
+                .andExpect(jsonPath("$.data[1].name").value("Laptop"))
+                .andExpect(jsonPath("$.data[2].id").value("3"))
+                .andExpect(jsonPath("$.data[2].name").value("Product"))
+                .andExpect(jsonPath("$.data[3].id").value("4"))
+                .andExpect(jsonPath("$.data[3].name").value("Banana"));
     }
 
     /**
@@ -168,9 +188,10 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void addProductToCartTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/product/1/add?cartId=1&quantity=1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_to_cart_successfully\"}"));
+        mvc.perform(get("/api/product/1/add?cartId=1&quantity=1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_to_cart_successfully"));
     }
 
     /**
@@ -194,11 +215,12 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void deleteProductTest() throws Exception {
-        MvcResult result = mvc.perform(delete("/api/product/1")
+        mvc.perform(delete("/api/product/1")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_deleted_successfully\"}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_deleted_successfully"));
     }
 
     /**
@@ -209,11 +231,12 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void deleteNonexistentProductTest() throws Exception {
-        MvcResult result = mvc.perform(delete("/api/product/99999")
+        mvc.perform(delete("/api/product/99999")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isNotFound()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":404,\"error\":\"Product couldn't be found!\"}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Product couldn't be found!"));
     }
 
     /**
@@ -226,12 +249,12 @@ class ProductControllerTest {
     void addProductWithoutNameTest() throws Exception {
         productDTO.setName("");
 
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"name\",\"message\":\"name_invalid_length\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"name\",\"message\":\"name_is_required\"}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'name' && @.message == 'name_invalid_length')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'name' && @.message == 'name_is_required')]").exists());
     }
 
     /**
@@ -244,11 +267,12 @@ class ProductControllerTest {
     void addProductWithZeroPriceTest() throws Exception {
         productDTO.setPrice(0.0);
 
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"price\",\"message\":\"price_value_error\"}]}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("price"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("price_value_error"));
     }
 
     /**
@@ -262,12 +286,12 @@ class ProductControllerTest {
         productDTO.setPrice(0.0);
         productDTO.setName("");
 
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"price\",\"message\":\"price_value_error\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"name\",\"message\":\"name_is_required\"}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'price' && @.message == 'price_value_error')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'name' && @.message == 'name_is_required')]").exists());
     }
 
     /**
@@ -288,17 +312,21 @@ class ProductControllerTest {
 
         productDTO.setCategories(new LinkedHashSet<>(Arrays.asList(digitalServices, cosmeticsAndBodyCare)));
 
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(3));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
-
-        result = mvc.perform(get("/api/product/3")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[{"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":1,\"name\":\"Digital Services\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":2,\"name\":\"Cosmetics and Body Care\"}"));
+        mvc.perform(get("/api/product/3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("3"))
+                .andExpect(jsonPath("$.name").value("Product"))
+                .andExpect(jsonPath("$.price").value(2.5))
+                .andExpect(jsonPath("$.categories[?(@.id == 1 && @.name == 'Digital Services')]").exists())
+                .andExpect(jsonPath("$.categories[?(@.id == 2 && @.name == 'Cosmetics and Body Care')]").exists());
     }
 
     /**
@@ -311,11 +339,12 @@ class ProductControllerTest {
     void addProductNameInvalidLengthTest() throws Exception {
         productDTO.setName("geragaergaerghawrighaerwuighaerghaerghaerghaerjighaerwuighaerghaerghghaerwuighaerghaerghaerghaerjighaerwughaerwuighaerghaerghaerghaerjighaerwughaerwuighaerghaerghaerghaerjighaerwughaerwuighaerghaerghaerghaerjighaerwughaerwuighaerghaerghaerghaerjighaerwughaerwuighaerghaerghaerghaerjighaerwuaerghaerjighaerwuighaerghaerghaerghaerjighaerwuighaerghaerghaerghaerjighaerwuighaerghaerghaerghaerjygfaerjygfawjfgawefgaewyfagrjyaerjyaergfjyargfjyarwgyjfa");
 
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"fieldErrors\":[{\"field\":\"name\",\"message\":\"name_invalid_length\"}]}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("name_invalid_length"));
     }
 
     /**
@@ -326,28 +355,38 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void getAllSellerProductsTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(3));
 
         productDTO.setName("Banana");
         productDTO.setPrice(1.25);
 
-        result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(4));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":4}"));
+        mvc.perform(get("/api/product/seller/seller"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value("1"))
+                .andExpect(jsonPath("$.data[0].name").value("Phone"))
+                .andExpect(jsonPath("$.data[1].id").value("3"))
+                .andExpect(jsonPath("$.data[1].name").value("Product"))
+                .andExpect(jsonPath("$.data[2].id").value("4"))
+                .andExpect(jsonPath("$.data[2].name").value("Banana"));
 
-        result = mvc.perform(get("/api/product/seller/seller")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null},{\"id\":\"3\",\"name\":\"Product\",\"price\":2.5,\"categories\":[],\"description\":null},{\"id\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}]"));
-
-        result = mvc.perform(get("/api/product/seller/anotherSeller")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("[{\"id\":\"2\",\"name\":\"Laptop\",\"price\":3.0,\"categories\":[],\"description\":null}]"));
+        mvc.perform(get("/api/product/seller/anotherSeller"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value("2"))
+                .andExpect(jsonPath("$.data[0].name").value("Laptop"));
     }
 
     /**
@@ -358,9 +397,10 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void getAllSellerProductsNonexistentUsernameTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/product/seller/ERROR")).andExpect(status().isNotFound()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":404,\"error\":\"username_not_found\"}"));
+        mvc.perform(get("/api/product/seller/ERROR"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("username_not_found"));
     }
 
     /**
@@ -425,9 +465,10 @@ class ProductControllerTest {
                 Files.readAllBytes(photoPath)
         );
 
-        MvcResult result = mvc.perform(multipart("/api/product/1/photo").file(photo)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_photo_updated_successfully\"}"));
+        mvc.perform(multipart("/api/product/1/photo").file(photo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_photo_updated_successfully"));
     }
 
     /**
@@ -464,9 +505,10 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void getProductPhotoNonexistentProductTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/product/9999/photo")).andExpect(status().isNotFound()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains(",\"status\":404,\"error\":\"Product couldn't be found!\"}"));
+        mvc.perform(get("/api/product/9999/photo"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Product couldn't be found!"));
     }
 
     /**
@@ -477,9 +519,11 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void updateProductTest() throws Exception {
-        MvcResult result = mvc.perform(get("/api/product/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null}"));
+        mvc.perform(get("/api/product/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.name").value("Phone"))
+                .andExpect(jsonPath("$.price").value(5.0));
 
         productDTO.setName("Android");
         productDTO.setPrice(2.5);
@@ -489,15 +533,19 @@ class ProductControllerTest {
         digitalServicesCategory.setName("Digital Services");
         productDTO.setCategories(new HashSet<>(List.of(digitalServicesCategory)));
 
-        result = mvc.perform(put("/api/product/1")
+        mvc.perform(put("/api/product/1")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_updated_successfully"));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_updated_successfully\"}"));
-
-        result = mvc.perform(get("/api/product/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"1\",\"name\":\"Android\",\"price\":2.5,\"categories\":[{\"id\":1,\"name\":\"Digital Services\"}],\"description\":null}"));
+        mvc.perform(get("/api/product/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.name").value("Android"))
+                .andExpect(jsonPath("$.price").value(2.5))
+                .andExpect(jsonPath("$.categories[?(@.id == 1 && @.name == 'Digital Services')]").exists());
     }
 
     /**
@@ -511,17 +559,19 @@ class ProductControllerTest {
         productDTO.setName("");
         productDTO.setPrice(-5.2);
 
-        MvcResult result = mvc.perform(put("/api/product/1")
+        mvc.perform(put("/api/product/1")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isBadRequest()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'name' && @.message == 'name_is_required')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'price' && @.message == 'price_value_error')]").exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'name' && @.message == 'name_invalid_length')]").exists());
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"name\",\"message\":\"name_is_required\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"price\",\"message\":\"price_value_error\"}"));
-        assertTrue(result.getResponse().getContentAsString().contains("{\"field\":\"name\",\"message\":\"name_invalid_length\"}"));
-
-        result = mvc.perform(get("/api/product/1")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"1\",\"name\":\"Phone\",\"price\":5.0,\"categories\":[],\"description\":null}"));
+        mvc.perform(get("/api/product/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.name").value("Phone"))
+                .andExpect(jsonPath("$.price").value(5.0));
     }
 
     /**
@@ -588,11 +638,12 @@ class ProductControllerTest {
                 "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123" +
                 "123123123123123123123123123123123123123123");
 
-        MvcResult result = mvc.perform(put("/api/product/1")
+        mvc.perform(put("/api/product/1")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isBadRequest()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("\"field\":\"description\",\"message\":\"description_too_long\""));
+                        APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("description"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("description_too_long"));
     }
 
     @Test
@@ -635,23 +686,28 @@ class ProductControllerTest {
     @Test
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void searchProductsTest() throws Exception {
-        MvcResult result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":3}"));
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(3));
 
         productDTO.setName("Banana");
         productDTO.setPrice(1.25);
 
-        result = mvc.perform(post("/api/product")
+        mvc.perform(post("/api/product")
                 .content(objectMapper.writeValueAsString(productDTO)).contentType(
-                        APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+                        APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("product_added_successfully"))
+                .andExpect(jsonPath("$.id").value(4));
 
-        assertTrue(result.getResponse().getContentAsString().contains("{\"status\":200,\"message\":\"product_added_successfully\",\"id\":4}"));
-
-        result = mvc.perform(get("/api/product/search?query=Banana")).andExpect(status().isOk()).andReturn();
-
-        assertTrue(result.getResponse().getContentAsString().contains("{\"id\":\"4\",\"name\":\"Banana\",\"price\":1.25,\"categories\":[],\"description\":null}"));
+        mvc.perform(get("/api/product/search?query=Banana"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value("4"))
+                .andExpect(jsonPath("$.data[0].name").value("Banana"));
     }
 }
