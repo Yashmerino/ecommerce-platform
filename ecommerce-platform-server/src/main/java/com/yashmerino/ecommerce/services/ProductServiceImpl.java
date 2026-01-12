@@ -36,6 +36,7 @@ import com.yashmerino.ecommerce.services.interfaces.ProductService;
 import com.yashmerino.ecommerce.services.interfaces.UserService;
 import com.yashmerino.ecommerce.utils.RequestBodyToEntityConverter;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -52,6 +53,7 @@ import java.util.Optional;
  * Implementation for product service.
  */
 @Service
+@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     /**
@@ -68,19 +70,6 @@ public class ProductServiceImpl implements ProductService {
      * Cart item repository.
      */
     private final CartItemRepository cartItemRepository;
-
-    /**
-     * Constructor to inject dependencies.
-     *
-     * @param productRepository  is the product repository.
-     * @param userService        is the user service.
-     * @param cartItemRepository is the cart item repository.
-     */
-    public ProductServiceImpl(ProductRepository productRepository, UserService userService, CartItemRepository cartItemRepository) {
-        this.productRepository = productRepository;
-        this.userService = userService;
-        this.cartItemRepository = cartItemRepository;
-    }
 
     /**
      * Returns the product.

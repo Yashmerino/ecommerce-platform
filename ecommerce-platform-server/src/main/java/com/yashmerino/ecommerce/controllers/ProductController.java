@@ -60,7 +60,7 @@ import static com.yashmerino.ecommerce.utils.RequestBodyToEntityConverter.conver
 /**
  * Product's controller.
  */
-@Tag(name = "2. Products Controller", description = "These endpoints are used to perform actions on products.")
+@Tag(name = "3. Products Controller", description = "These endpoints are used to perform actions on products.")
 @SecurityRequirement(name = SwaggerConfig.SECURITY_SCHEME_NAME)
 @RestController
 @RequestMapping("/api/product")

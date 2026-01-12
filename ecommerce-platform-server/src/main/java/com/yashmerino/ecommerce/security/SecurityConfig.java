@@ -96,6 +96,16 @@ public class SecurityConfig {
     private static final String CATEGORIES_ALL_ENDPOINTS = "/api/categories/**";
 
     /**
+     * Regex for all the endpoints related to orders.
+     */
+    private static final String ORDERS_ALL_ENDPOINTS = "/api/order/**";
+
+    /**
+     * Regex for all the endpoints related to payments.
+     */
+    private static final String PAYMENTS_ALL_ENDPOINTS = "/api/payment/**";
+
+    /**
      * Regex for all the endpoints related to users.
      */
     private static final String USERS_ALL_ENDPOINTS = "/api/user/**";
@@ -154,6 +164,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, USERS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name(), Role.SELLER.name())
                         .requestMatchers(HttpMethod.PUT, USERS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name(), Role.SELLER.name())
                         .requestMatchers(CART_ITEMS_ALL_ENDPOINTS).hasAnyAuthority(Role.SELLER.name(), Role.USER.name())
+                        .requestMatchers(ORDERS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name())
+                        .requestMatchers(PAYMENTS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name())
                         .requestMatchers(HttpMethod.POST, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
                         .requestMatchers(HttpMethod.PUT, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
                         .requestMatchers(HttpMethod.DELETE, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())

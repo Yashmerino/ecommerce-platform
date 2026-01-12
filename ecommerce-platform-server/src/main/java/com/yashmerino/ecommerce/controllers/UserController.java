@@ -48,7 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * Controller for users.
  */
-@Tag(name = "1. User", description = "These endpoints are used to manipulate users.")
+@Tag(name = "2. User", description = "These endpoints are used to manipulate users.")
 @SecurityRequirement(name = SwaggerConfig.SECURITY_SCHEME_NAME)
 @RestController
 @RequestMapping("/api/user")

@@ -54,7 +54,7 @@ import java.util.List;
 /**
  * Cart item's controller.
  */
-@Tag(name = "3. Cart Items Controller", description = "These endpoints are used to perform actions on cart items.")
+@Tag(name = "4. Cart Items Controller", description = "These endpoints are used to perform actions on cart items.")
 @SecurityRequirement(name = SwaggerConfig.SECURITY_SCHEME_NAME)
 @RestController
 @RequestMapping("/api/cartItem")
