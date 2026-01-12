@@ -59,7 +59,7 @@ public class OrderController {
 
         SuccessWithIdDTO successWithIdDTO = new SuccessWithIdDTO();
         successWithIdDTO.setStatus(200);
-        successWithIdDTO.setMessage("order_successfully_placed");
+        successWithIdDTO.setMessage("order_placed_successfully");
         successWithIdDTO.setId(id);
 
         return new ResponseEntity<>(successWithIdDTO, HttpStatus.OK);

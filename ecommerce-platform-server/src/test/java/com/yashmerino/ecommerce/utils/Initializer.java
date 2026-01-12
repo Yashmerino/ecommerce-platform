@@ -27,10 +27,12 @@ package com.yashmerino.ecommerce.utils;
 import com.yashmerino.ecommerce.model.*;
 import com.yashmerino.ecommerce.model.Role;
 import com.yashmerino.ecommerce.repositories.*;
+import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -44,6 +46,7 @@ import static com.yashmerino.ecommerce.utils.Role.USER;
  */
 @Component
 @Profile("test")
+@AllArgsConstructor
 public class Initializer implements CommandLineRunner {
 
     /**
@@ -72,28 +75,19 @@ public class Initializer implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
 
     /**
+     * Order repository.
+     */
+    private final OrderRepository orderRepository;
+
+    /**
+     * Payment repository.
+     */
+    private final PaymentRepository paymentRepository;
+
+    /**
      * Roles' repository.
      */
     private final RoleRepository roleRepository;
-
-    /**
-     * Constructor.
-     *
-     * @param userRepository     is the repository for customers.
-     * @param cartRepository     is the repository for carts.
-     * @param cartItemRepository is the repository for cart items.
-     * @param productRepository  is the repository for products.
-     * @param categoryRepository is the repository for categories.
-     * @param roleRepository     is the repository  for roles.
-     */
-    public Initializer(UserRepository userRepository, CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository) {
-        this.userRepository = userRepository;
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-        this.roleRepository = roleRepository;
-    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -222,5 +216,19 @@ public class Initializer implements CommandLineRunner {
         officeEquipment.setId(9L);
         officeEquipment.setName("Office Equipment");
         categoryRepository.save(officeEquipment);
+
+        Order order = new Order();
+        order.setId(1L);
+        order.setTotalAmount(BigDecimal.valueOf(100.00));
+        order.setStatus(OrderStatus.CREATED);
+        order.setUser(user);
+        orderRepository.save(order);
+
+        Payment payment = new Payment();
+        payment.setId(1L);
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setAmount(BigDecimal.valueOf(100.00));
+        payment.setOrder(order);
+        paymentRepository.save(payment);
     }
 }

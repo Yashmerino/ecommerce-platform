@@ -61,7 +61,7 @@ public class PaymentController {
 
         SuccessDTO successDTO = new SuccessDTO();
         successDTO.setStatus(200);
-        successDTO.setMessage("payment_successfully_sent");
+        successDTO.setMessage("payment_sent_successfully");
 
         return new ResponseEntity<>(successDTO, HttpStatus.OK);
     }
