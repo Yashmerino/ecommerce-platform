@@ -33,7 +33,7 @@ import { Box, Paper } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getTranslation } from '../../../../i18n/i18n';
-import NoPhoto from "../../../../img/no_photo.jpg";
+import NoPhoto from "../../../../img/no-photo.jpg";
 import { useNavigate } from 'react-router';
 
 interface CartItemProps {

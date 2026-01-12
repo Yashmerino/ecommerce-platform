@@ -25,8 +25,15 @@ package com.yashmerino.ecommerce.services;
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import com.yashmerino.ecommerce.model.Cart;
+import com.yashmerino.ecommerce.model.User;
+import com.yashmerino.ecommerce.repositories.CartItemRepository;
 import com.yashmerino.ecommerce.repositories.CartRepository;
 import com.yashmerino.ecommerce.services.interfaces.CartService;
+import com.yashmerino.ecommerce.services.interfaces.UserService;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -35,6 +42,7 @@ import java.util.Optional;
  * Implementation for cart service.
  */
 @Service
+@AllArgsConstructor
 public class CartServiceImpl implements CartService {
 
     /**
@@ -43,12 +51,25 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
 
     /**
-     * Constructor to inject dependencies.
-     *
-     * @param cartRepository is the cart repository.
+     * Cart item repository.
      */
-    public CartServiceImpl(CartRepository cartRepository) {
-        this.cartRepository = cartRepository;
+    private final CartItemRepository cartItemRepository;
+
+    /**
+     * User service.
+     */
+    private final UserService userService;
+
+    /**
+     * Clears the current user's cart.
+     */
+    @Override
+    @Transactional
+    public void clearCart() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(userDetails.getUsername());
+
+        cartItemRepository.deleteByCartId(user.getCart().getId());
     }
 
     /**

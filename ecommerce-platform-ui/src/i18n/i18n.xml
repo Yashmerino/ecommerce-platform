@@ -25,6 +25,11 @@
 		<val lang="RU">Способ оплаты</val>
 		<val lang="RO">Modalitate de plată</val>
 	</key>
+	<key value="start_by_adding_product">
+		<val lang="ENG">Start by adding a product to your cart.</val>
+		<val lang="RU">Начните с добавления товара в корзину.</val>
+		<val lang="RO">Începeți prin a adăuga un produs în coșul dvs.</val>
+	</key>
 	<key value="remember_payment_method">
 		<val lang="ENG">Remember payment method</val>
 		<val lang="RU">Запомнить способ оплаты</val>
@@ -479,6 +484,56 @@
 		<val lang="ENG">Crypto</val>
 		<val lang="RU">Криптовалюта</val>
 		<val lang="RO">Crypto</val>
+	</key>
+	<key value="cardholder_name">
+		<val lang="ENG">Cardholder Name</val>
+		<val lang="RU">Имя держателя карты</val>
+		<val lang="RO">Numele titularului cardului</val>
+	</key>
+	<key value="card_number">
+		<val lang="ENG">Card Number</val>
+		<val lang="RU">Номер карты</val>
+		<val lang="RO">Numărul cardului</val>
+	</key>
+	<key value="expiry_date">
+		<val lang="ENG">Expiry Date</val>
+		<val lang="RU">Дата истечения</val>
+		<val lang="RO">Data expirării</val>
+	</key>
+	<key value="cvv">
+		<val lang="ENG">CVV</val>
+		<val lang="RU">CVV</val>
+		<val lang="RO">CVV</val>
+	</key>
+	<key value="save_card_details">
+		<val lang="ENG">Save card details for next time</val>
+		<val lang="RU">Сохранить данные карты на следующий раз</val>
+		<val lang="RO">Salvează datele cardului pentru data viitoare</val>
+	</key>
+	<key value="fill_card_details">
+		<val lang="ENG">Please fill in all card details</val>
+		<val lang="RU">Пожалуйста, заполните все данные карты</val>
+		<val lang="RO">Vă rugăm să completați toate detaliile cardului</val>
+	</key>
+	<key value="order_creation_failed">
+		<val lang="ENG">Failed to create order</val>
+		<val lang="RU">Ошибка при создании заказа</val>
+		<val lang="RO">Eroare la crearea comenzii</val>
+	</key>
+	<key value="payment_failed">
+		<val lang="ENG">Payment processing failed</val>
+		<val lang="RU">Ошибка при обработке платежа</val>
+		<val lang="RO">Eroare la procesarea plății</val>
+	</key>
+	<key value="order_placed_successfully">
+		<val lang="ENG">Order placed successfully!</val>
+		<val lang="RU">Заказ успешно размещен!</val>
+		<val lang="RO">Comanda a fost plasată cu succes!</val>
+	</key>
+	<key value="checkout_error">
+		<val lang="ENG">An error occurred during checkout</val>
+		<val lang="RU">Произошла ошибка при оформлении заказа</val>
+		<val lang="RO">A apărut o eroare la finalizarea comenzii</val>
 	</key>
 </i18n>
 	

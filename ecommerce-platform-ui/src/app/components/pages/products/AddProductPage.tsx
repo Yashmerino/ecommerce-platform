@@ -42,7 +42,7 @@ import * as React from 'react';
 import { addProduct, setProductPhoto } from '../../../api/ProductRequest';
 import { InputError, isFieldPresentInInputErrors } from '../../../utils/InputErrorUtils';
 import InputFields from '../../../utils/InputFields';
-import NoPhoto from "../../../../img/no_photo.jpg";
+import NoPhoto from "../../../../img/no-photo.jpg";
 import AddIcon from '@mui/icons-material/Add';
 
 import Header from '../../Header';

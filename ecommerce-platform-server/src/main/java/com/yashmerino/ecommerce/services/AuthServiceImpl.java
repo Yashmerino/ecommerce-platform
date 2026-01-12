@@ -118,7 +118,6 @@ public class AuthServiceImpl implements AuthService {
 
         Optional<Role> roleOptional = roleRepository.findByName(registerDTO.getRole().name());
 
-
         if (roleOptional.isPresent()) {
             Role role = roleOptional.get();
             user.setRoles(new HashSet<>(List.of(role)));

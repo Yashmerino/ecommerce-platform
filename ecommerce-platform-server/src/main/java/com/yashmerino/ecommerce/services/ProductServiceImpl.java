@@ -171,9 +171,6 @@ public class ProductServiceImpl implements ProductService {
         cartItem.setName(product.getName());
         cartItem.setPrice(product.getPrice());
         cartItemRepository.save(cartItem);
-
-        product.linkCartItem(cartItem);
-        productRepository.save(product);
     }
 
     /**

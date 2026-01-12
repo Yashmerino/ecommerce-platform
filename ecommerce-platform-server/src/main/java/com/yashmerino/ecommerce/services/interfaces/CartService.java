@@ -34,6 +34,11 @@ import java.util.Optional;
 public interface CartService {
 
     /**
+     * Clears the current user's cart.
+     */
+    void clearCart();
+
+    /**
      * Returns the cart.
      *
      * @param id is the cart's id.
@@ -46,5 +51,4 @@ public interface CartService {
      * @param cart is the cart to save.
      */
     void save(final Cart cart);
-
 }

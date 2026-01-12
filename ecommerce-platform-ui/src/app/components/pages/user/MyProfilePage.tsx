@@ -31,7 +31,7 @@ import InputFields from '../../../utils/InputFields';
 import Header from '../../Header';
 import Copyright from '../../footer/Copyright';
 import { updateInfo } from '../../../slices/infoSlice';
-import NoPhoto from "../../../../img/no_photo.jpg";
+import NoPhoto from "../../../../img/no-photo.jpg";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import { useNavigate } from 'react-router-dom';

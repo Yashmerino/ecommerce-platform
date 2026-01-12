@@ -169,9 +169,6 @@ public class Initializer implements CommandLineRunner {
         cart.setItems(new HashSet<>(Arrays.asList(cartItem)));
         cartRepository.save(cart);
 
-        product.linkCartItem(cartItem);
-        productRepository.save(product);
-
         Category digitalServices = new Category();
         digitalServices.setId(1L);
         digitalServices.setName("Digital Services");

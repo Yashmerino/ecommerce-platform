@@ -25,8 +25,6 @@ package com.yashmerino.ecommerce.model.dto;
 
 import com.yashmerino.ecommerce.utils.OrderStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,12 +42,6 @@ public class OrderDTO {
      * Product's id.
      */
     private String id;
-
-    /**
-     * Order's user ID.
-     */
-    @NotNull(message = "user_is_required")
-    private Long userId;
 
     /**
      * Total amount of the order to be paid.

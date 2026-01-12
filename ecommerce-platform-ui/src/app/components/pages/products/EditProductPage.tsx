@@ -46,7 +46,7 @@ import Copyright from '../../footer/Copyright';
 import { useAppSelector } from '../../../hooks'
 import { getCategories } from '../../../api/CategoryRequest';
 import { getTranslation } from '../../../../i18n/i18n';
-import NoPhoto from "../../../../img/no_photo.jpg";
+import NoPhoto from "../../../../img/no-photo.jpg";
 
 const MenuProps = {
     PaperProps: {

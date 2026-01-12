@@ -39,6 +39,7 @@ import MyProductCard from './MyProductCard';
 import { Box, Button, Paper, Pagination } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { PaginatedDTO } from '../../../../types/PaginatedDTO';
+import EMPTY_BOX from '../../../../img/empty-box.png';
 
 const ProductsContainer = () => {
   const jwt = useAppSelector((state) => state.jwt);
@@ -121,7 +122,7 @@ const ProductsContainer = () => {
               </Box>
             ) : (
               <Box sx={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, p: 4, color: 'text.secondary' }}>
-                <Box component="img" src="/empty-box.png" alt="No products" sx={{ width: 120, height: 120, opacity: 0.5 }} />
+                <Box component="img" src={EMPTY_BOX} alt="No products" sx={{ width: 180, height: 180, opacity: 0.75 }} />
                 <Typography variant="h6" textAlign="center">{getTranslation(lang, 'no_products_found')}</Typography>
                 <Typography variant="body2" textAlign="center">{getTranslation(lang, 'start_by_adding_product')}</Typography>
               </Box>

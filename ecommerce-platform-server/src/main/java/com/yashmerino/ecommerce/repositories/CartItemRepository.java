@@ -41,4 +41,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     @Query("SELECT SUM(c.price * c.quantity) FROM cart_items c WHERE c.cart.user.username = :username")
     Double getTotalPriceByUsername(@Param("username") String username);
+
+    void deleteByCartId(final Long cartId);
 }

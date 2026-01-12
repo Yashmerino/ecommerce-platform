@@ -31,7 +31,7 @@ import { useAppSelector } from '../../../hooks';
 import { useNavigate } from 'react-router-dom';
 import { getTranslation } from '../../../../i18n/i18n';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import NoPhoto from "../../../../img/no_photo.jpg";
+import NoPhoto from "../../../../img/no-photo.jpg";
 
 interface CategoryProp {
   id: number,

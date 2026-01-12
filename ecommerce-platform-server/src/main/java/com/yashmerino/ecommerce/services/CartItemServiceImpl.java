@@ -94,9 +94,6 @@ public class CartItemServiceImpl implements CartItemService {
             if (!cartItem.getCart().getUser().getUsername().equals(currentUserUsername)) {
                 throw new AccessDeniedException(ACCESS_DENIED_MESSAGE);
             }
-
-            Product product = cartItem.getProduct();
-            product.deleteCartItem(cartItem);
         } else {
             throw new EntityNotFoundException(CART_ITEM_NOT_FOUND_MESSAGE);
         }

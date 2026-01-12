@@ -111,6 +111,11 @@ public class SecurityConfig {
     private static final String USERS_ALL_ENDPOINTS = "/api/user/**";
 
     /**
+     * Regex for all the endpoints related to carts.
+     */
+    private static final String CARTS_ALL_ENDPOINTS = "/api/cart/**";
+
+    /**
      * Jwt Auth Entry Point to handle exceptions.
      */
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
@@ -166,6 +171,7 @@ public class SecurityConfig {
                         .requestMatchers(CART_ITEMS_ALL_ENDPOINTS).hasAnyAuthority(Role.SELLER.name(), Role.USER.name())
                         .requestMatchers(ORDERS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name())
                         .requestMatchers(PAYMENTS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name())
+                        .requestMatchers(CARTS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name())
                         .requestMatchers(HttpMethod.POST, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
                         .requestMatchers(HttpMethod.PUT, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
                         .requestMatchers(HttpMethod.DELETE, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
