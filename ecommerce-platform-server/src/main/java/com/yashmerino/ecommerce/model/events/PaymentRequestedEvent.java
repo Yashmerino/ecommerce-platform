@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 public record PaymentRequestedEvent(
         Long paymentId,
         Long orderId,
-        BigDecimal amount
+        BigDecimal amount,
+        String stripeToken
 ) {}

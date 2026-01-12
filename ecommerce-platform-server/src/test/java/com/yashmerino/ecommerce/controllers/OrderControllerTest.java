@@ -78,7 +78,6 @@ class OrderControllerTest {
     void setup() {
         orderDTO.setStatus(OrderStatus.CREATED);
         orderDTO.setTotalAmount(BigDecimal.valueOf(2.50));
-        orderDTO.setUserId(1L);
     }
 
     /**
@@ -90,8 +89,7 @@ class OrderControllerTest {
     @WithMockUser(username = "user", authorities = {"USER"})
     void placeOrderTest() throws Exception {
         mvc.perform(post("/api/order")
-                .content(objectMapper.writeValueAsString(orderDTO)).contentType(
-                        APPLICATION_JSON))
+                .content(objectMapper.writeValueAsString(orderDTO)).contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("order_placed_successfully"))

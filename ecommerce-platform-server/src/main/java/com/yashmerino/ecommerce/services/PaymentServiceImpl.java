@@ -25,6 +25,7 @@ package com.yashmerino.ecommerce.services;
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import com.yashmerino.ecommerce.model.*;
+import com.yashmerino.ecommerce.model.dto.PaymentDTO;
 import com.yashmerino.ecommerce.model.events.PaymentRequestedEvent;
 import com.yashmerino.ecommerce.repositories.OrderRepository;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
@@ -60,15 +61,16 @@ public class PaymentServiceImpl implements PaymentService {
      * Sends an event to Kafka topic to process the payment for an order.
      *
      * @param orderId is the payment's order ID.
+     * @param paymentDTO is the payment's DTO.
      */
     @Override
-    public void pay(Long orderId) {
+    public void pay(Long orderId, PaymentDTO paymentDTO) {
         Order order = this.orderRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("order_not_found"));
 
         Payment payment = new Payment(order, order.getTotalAmount(), PaymentStatus.PENDING);
         payment = paymentRepository.save(payment);
 
-        PaymentRequestedEvent event = new PaymentRequestedEvent(payment.getId(), orderId, order.getTotalAmount());
+        PaymentRequestedEvent event = new PaymentRequestedEvent(payment.getId(), orderId, order.getTotalAmount(), paymentDTO.getStripeToken());
         paymentEventProducer.sendPaymentRequested(event);
     }
 }

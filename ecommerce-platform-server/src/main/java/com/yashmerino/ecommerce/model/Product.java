@@ -25,6 +25,7 @@ package com.yashmerino.ecommerce.model;
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.yashmerino.ecommerce.model.base.BaseEntity;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -33,6 +34,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -74,6 +76,13 @@ public class Product extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    /**
+     * The cart items that belong to this product.
+     */
+    @JsonManagedReference
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CartItem> cartItems = new HashSet<>();
 
     /**
      * Product's photo.

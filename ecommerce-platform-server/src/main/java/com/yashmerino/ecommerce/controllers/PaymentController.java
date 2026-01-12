@@ -1,5 +1,6 @@
 package com.yashmerino.ecommerce.controllers;
 
+import com.yashmerino.ecommerce.model.dto.PaymentDTO;
 import com.yashmerino.ecommerce.model.dto.SuccessDTO;
 import com.yashmerino.ecommerce.services.interfaces.PaymentService;
 import com.yashmerino.ecommerce.swagger.SwaggerConfig;
@@ -15,10 +16,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Payments controller.
@@ -56,8 +54,8 @@ public class PaymentController {
             @ApiResponse(responseCode = SwaggerHttpStatus.INTERNAL_SERVER_ERROR, description = SwaggerMessages.INTERNAL_SERVER_ERROR,
                     content = @Content)})
     @PostMapping("/{orderId}")
-    public ResponseEntity<SuccessDTO> pay(@PathVariable Long orderId) {
-        this.paymentService.pay(orderId);
+    public ResponseEntity<SuccessDTO> pay(@PathVariable Long orderId, @Validated @RequestBody PaymentDTO paymentDTO) {
+        this.paymentService.pay(orderId, paymentDTO);
 
         SuccessDTO successDTO = new SuccessDTO();
         successDTO.setStatus(200);

@@ -130,7 +130,7 @@ public class ProductServiceImpl implements ProductService {
     public void delete(Long id) {
         Product product = this.getProduct(id);
 
-        productRepository.deleteById(product.getId());
+        productRepository.delete(product);
     }
 
     /**

@@ -23,50 +23,28 @@ package com.yashmerino.ecommerce.controllers;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yashmerino.ecommerce.model.dto.OrderDTO;
-import com.yashmerino.ecommerce.model.dto.PaymentDTO;
-import com.yashmerino.ecommerce.model.events.PaymentRequestedEvent;
-import com.yashmerino.ecommerce.services.interfaces.PaymentService;
-import com.yashmerino.ecommerce.utils.OrderStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Tests for {@link PaymentController}
+ * Tests for {@link CartController}
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @ActiveProfiles("test")
-class PaymentControllerTest {
-
-    /**
-     * Payment DTO to use in tests.
-     */
-    private final PaymentDTO paymentDTO = new PaymentDTO();
+class CartControllerTest {
 
     /**
      * Mock mvc to perform requests.
@@ -75,46 +53,16 @@ class PaymentControllerTest {
     private MockMvc mvc;
 
     /**
-     * Object mapper.
-     */
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
-    private PaymentService paymentService;
-
-    @BeforeEach
-    void setup() {
-        paymentDTO.setOrderId(1L);
-        paymentDTO.setStripeToken("STRIPE-TOKEN");
-        paymentDTO.setAmount(BigDecimal.valueOf(2.50));
-    }
-
-    /**
-     * Test send pay event.
+     * Test clear cart.
      *
      * @throws Exception if something goes wrong.
      */
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
-    void sendPayEventTest() throws Exception {
-        doNothing().when(paymentService).pay(anyLong(), any(PaymentDTO.class));
-
-        mvc.perform(post("/api/payment/1")
-                .content(objectMapper.writeValueAsString(paymentDTO)).contentType(APPLICATION_JSON))
+    void clearCartTest() throws Exception {
+        mvc.perform(delete("/api/cart/clear"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("payment_sent_successfully"));
-    }
-
-    /**
-     * Test send pay event as seller.
-     *
-     * @throws Exception if something goes wrong.
-     */
-    @Test
-    @WithMockUser(username = "seller", authorities = {"SELLER"})
-    void sendPayEventAsSellerTest() throws Exception {
-        mvc.perform(post("/api/payment/1")).andExpect(status().isForbidden()).andReturn();
+                .andExpect(jsonPath("$.message").value("cart_cleared_successfully"));
     }
 }
