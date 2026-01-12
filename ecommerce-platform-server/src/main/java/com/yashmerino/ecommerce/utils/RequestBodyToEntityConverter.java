@@ -25,10 +25,13 @@ package com.yashmerino.ecommerce.utils;
 
 import com.yashmerino.ecommerce.model.CartItem;
 import com.yashmerino.ecommerce.model.Category;
+import com.yashmerino.ecommerce.model.Order;
 import com.yashmerino.ecommerce.model.Product;
 import com.yashmerino.ecommerce.model.dto.CartItemDTO;
 import com.yashmerino.ecommerce.model.dto.CategoryDTO;
+import com.yashmerino.ecommerce.model.dto.OrderDTO;
 import com.yashmerino.ecommerce.model.dto.ProductDTO;
+import org.aspectj.weaver.ast.Or;
 
 /**
  * Utils class that converts request body to an entity;
@@ -56,6 +59,21 @@ public class RequestBodyToEntityConverter {
         product.setCategories(productDTO.getCategories());
 
         return product;
+    }
+
+    /**
+     * Converts orderDTO to order entity.
+     *
+     * @param orderDTO is the order DTO.
+     *
+     * @return <code>Order</code>
+     */
+    public static Order convertToOrder(final OrderDTO orderDTO) {
+        Order order = new Order();
+        order.setTotalAmount(orderDTO.getTotalAmount());
+        order.setStatus(orderDTO.getStatus());
+
+        return order;
     }
 
     /**
