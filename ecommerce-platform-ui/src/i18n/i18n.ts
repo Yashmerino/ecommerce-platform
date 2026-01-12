@@ -1,4 +1,4 @@
-import i18n from "./i18n.xml";
+import i18nData from "./i18n.json";
 import Lang from "./LangEnum";
 
 /**
@@ -8,29 +8,12 @@ import Lang from "./LangEnum";
  * @returns The translated message.
  */
 export const getTranslation = (lang: Lang, key: string) => {
-    let translatedMessage = key;
-
-    if (!i18n.i18n) {
+    const translations = i18nData.translations as Record<string, Record<string, string>>;
+    
+    if (!translations || !translations[key]) {
         return key;
     }
 
-    // @ts-ignore
-    i18n.i18n.key.forEach(element => {
-        if (element.$.value.localeCompare(key) == 0) {
-            const messagesArray = element.val;
-
-            // @ts-ignore
-            messagesArray.forEach(message => {
-                if (message.$.lang.localeCompare(lang.toString()) == 0) {
-                    translatedMessage = message._;
-                }
-            })
-        }
-
-        if (translatedMessage != key) {
-            return;
-        }
-    });
-
-    return translatedMessage;
+    const langStr = lang.toString();
+    return translations[key][langStr] || key;
 }

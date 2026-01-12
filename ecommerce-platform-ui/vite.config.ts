@@ -22,44 +22,23 @@
  * SOFTWARE.
  */
 
-const common = require("./webpack.common");
-const {merge} = require("webpack-merge");
-const path = require("path");
-let HtmlWebpackPlugin = require("html-webpack-plugin");
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-module.exports = merge(common, {
-    mode: "development",
-    output: {
-        filename: "[name].bundle.js",
-        path: path.resolve(__dirname, "dist"),
-        assetModuleFilename: "assets/[name][ext]",
-    },
-    module: {
-        rules: [
-            {
-                test: /\.(css)$/,
-                use: ['style-loader', 'css-loader']
-            },
-            {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    'style-loader',
-                    'css-loader',
-                    {
-                        loader: 'sass-loader',
-                        options: {
-                            implementation: require('sass'),
-                            warnRuleAsWarning: true
-                        }
-                    }
-                ]
-            },
-        ],
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: "./src/template.html",
-            chunks: ["main"],
-        }),
-    ],
-});
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    'process.env.API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL),
+  },
+  server: {
+    port: 3000,
+    open: true,
+    strictPort: false,
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: 'terser',
+  },
+})
