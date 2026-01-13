@@ -108,6 +108,7 @@
     "order_creation_failed": { "ENG": "Failed to create order", "RU": "Ошибка при создании заказа", "RO": "Eroare la crearea comenzii" },
     "payment_failed": { "ENG": "Payment processing failed", "RU": "Ошибка при обработке платежа", "RO": "Eroare la procesarea plății" },
     "order_placed_successfully": { "ENG": "Order placed successfully!", "RU": "Заказ успешно размещен!", "RO": "Comanda a fost plasată cu succes!" },
-    "checkout_error": { "ENG": "An error occurred during checkout", "RU": "Произошла ошибка при оформлении заказа", "RO": "A apărut o eroare la finalizarea comenzii" }
+    "checkout_error": { "ENG": "An error occurred during checkout", "RU": "Произошла ошибка при оформлении заказа", "RO": "A apărut o eroare la finalizarea comenzii" },
+    "minimum_order_amount": { "ENG": "Order total must be at least 0.50€ to checkout.", "RU": "Минимальная сумма заказа — 0,50€ для оформления.", "RO": "Suma minimă pentru comandă este 0,50€ pentru a continua." }
   }
 }

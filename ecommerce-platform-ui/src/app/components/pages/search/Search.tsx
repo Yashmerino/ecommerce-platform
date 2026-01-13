@@ -41,20 +41,29 @@ function Search() {
         setState(prev => ({ ...prev, loading: true }));
         try {
             const response = await searchProducts(jwt.token, query, page, 10);
-            if (response.ok) {
-                const data = await response.json();
+
+            // searchProducts returns parsed JSON on success, Response on failure/401
+            if (response && 'ok' in response) {
+                if (!response.ok) {
+                    setState(prev => ({ ...prev, loading: false }));
+                    return;
+                }
+            }
+
+            if (response && typeof response === 'object') {
                 setState(prev => ({
                     ...prev,
                     query,
-                    results: data.data || [],
-                    page: data.currentPage,
-                    totalPages: data.totalPages,
-                    totalItems: data.totalItems,
+                    results: (response as any)?.data || [],
+                    page: (response as any)?.currentPage ?? 0,
+                    totalPages: (response as any)?.totalPages ?? 0,
+                    totalItems: (response as any)?.totalItems ?? 0,
                     loading: false,
                 }));
-            } else {
-                setState(prev => ({ ...prev, loading: false }));
+                return;
             }
+
+            setState(prev => ({ ...prev, loading: false }));
         } catch (error) {
             console.error('Search error:', error);
             setState(prev => ({ ...prev, loading: false }));

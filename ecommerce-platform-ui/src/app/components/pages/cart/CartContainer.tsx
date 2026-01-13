@@ -48,6 +48,7 @@ export interface CartItem {
 }
 
 const CartContainer = () => {
+  const MIN_TOTAL = 0.5;
   const jwt = useAppSelector(state => state.jwt);
   const username = useAppSelector(state => state.username.sub);
   const lang = useAppSelector(state => state.lang.lang);
@@ -141,6 +142,12 @@ const CartContainer = () => {
       setIsLoading(true);
       setError(null);
       setSuccess(null);
+
+      if (total < MIN_TOTAL) {
+        setError(getTranslation(lang, "minimum_order_amount") || "Order total must be at least 0.50€.");
+        setIsLoading(false);
+        return;
+      }
 
       // Validate cardholder name
       if (!cardHolder || !cardHolder.trim()) {
@@ -311,7 +318,12 @@ const CartContainer = () => {
                     title={cartItem.name}
                     price={cartItem.price}
                     quantity={cartItem.quantity}
-                    onUpdate={(id, newQuantity) => {
+                    onUpdate={async (id, newQuantity) => {
+                      if (newQuantity <= 0) {
+                        await fetchCartItems(pagination.currentPage);
+                        return;
+                      }
+
                       setPagination(prev => ({
                         ...prev,
                         data: prev.data.map(item => item.id === id ? { ...item, quantity: newQuantity } : item),
@@ -412,6 +424,11 @@ const CartContainer = () => {
                 }}
               />
             </Box>
+            {total < MIN_TOTAL && (
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                {getTranslation(lang, "minimum_order_amount") || "Order total must be at least 0.50€ to checkout."}
+              </Alert>
+            )}
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
             <Button 
@@ -420,7 +437,7 @@ const CartContainer = () => {
               size="large" 
               sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 600, textTransform: 'none' }}
               onClick={handleCheckout}
-              disabled={isLoading || pagination.data.length === 0}
+              disabled={isLoading || pagination.data.length === 0 || total < MIN_TOTAL}
             >
               {isLoading ? <CircularProgress size={24} sx={{ mr: 1 }} /> : null}
               {getTranslation(lang, "proceed_to_checkout")}
