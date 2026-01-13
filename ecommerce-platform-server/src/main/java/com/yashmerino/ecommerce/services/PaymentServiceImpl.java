@@ -24,9 +24,10 @@ package com.yashmerino.ecommerce.services;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import com.yashmerino.ecommerce.kafka.PaymentEventProducer;
 import com.yashmerino.ecommerce.model.*;
 import com.yashmerino.ecommerce.model.dto.PaymentDTO;
-import com.yashmerino.ecommerce.model.events.PaymentRequestedEvent;
+import com.yashmerino.ecommerce.kafka.events.PaymentRequestedEvent;
 import com.yashmerino.ecommerce.repositories.OrderRepository;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import com.yashmerino.ecommerce.services.interfaces.PaymentService;

@@ -21,6 +21,10 @@ services:
       # ===== DEV =====
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
   mysql:
     image: mysql:8.0
     container_name: mysql

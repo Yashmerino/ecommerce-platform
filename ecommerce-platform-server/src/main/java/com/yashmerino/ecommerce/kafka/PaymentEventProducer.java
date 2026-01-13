@@ -1,6 +1,6 @@
-package com.yashmerino.ecommerce.services;
+package com.yashmerino.ecommerce.kafka;
 
-import com.yashmerino.ecommerce.model.events.PaymentRequestedEvent;
+import com.yashmerino.ecommerce.kafka.events.PaymentRequestedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
