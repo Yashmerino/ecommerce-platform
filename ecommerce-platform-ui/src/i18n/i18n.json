@@ -104,7 +104,6 @@
     "card_number": { "ENG": "Card Number", "RU": "Номер карты", "RO": "Numărul cardului" },
     "expiry_date": { "ENG": "Expiry Date", "RU": "Дата истечения", "RO": "Data expirării" },
     "cvv": { "ENG": "CVV", "RU": "CVV", "RO": "CVV" },
-    "save_card_details": { "ENG": "Save card details for next time", "RU": "Сохранить данные карты на следующий раз", "RO": "Salvează datele cardului pentru data viitoare" },
     "fill_card_details": { "ENG": "Please fill in all card details", "RU": "Пожалуйста, заполните все данные карты", "RO": "Vă rugăm să completați toate detaliile cardului" },
     "order_creation_failed": { "ENG": "Failed to create order", "RU": "Ошибка при создании заказа", "RO": "Eroare la crearea comenzii" },
     "payment_failed": { "ENG": "Payment processing failed", "RU": "Ошибка при обработке платежа", "RO": "Eroare la procesarea plății" },

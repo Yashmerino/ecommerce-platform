@@ -36,6 +36,7 @@ import { processPayment } from '../../../api/PaymentRequest';
 import { clearCart } from '../../../api/CartRequest';
 import { useAppSelector } from '../../../hooks';
 import { getTranslation } from '../../../../i18n/i18n';
+import { STRIPE_PUBLISHABLE_KEY } from '../../../../env-config.ts';
 import { PaginatedDTO } from '../../../../types/PaginatedDTO';
 
 export interface CartItem {
@@ -52,6 +53,70 @@ const CartContainer = () => {
   const lang = useAppSelector(state => state.lang.lang);
   const navigate = useNavigate();
 
+  // Stripe instance and Elements
+  const stripePromise = React.useMemo(() => {
+    const stripe = (window as any).Stripe;
+    if (stripe) {
+      return Promise.resolve(stripe(STRIPE_PUBLISHABLE_KEY));
+    }
+    return Promise.reject(new Error('Stripe not loaded'));
+  }, []);
+
+  const [stripe, setStripe] = React.useState<any>(null);
+  const [elements, setElements] = React.useState<any>(null);
+  const [cardElement, setCardElement] = React.useState<any>(null);
+  const isMountedRef = React.useRef(false);
+
+  // Initialize Stripe Elements
+  React.useEffect(() => {
+    stripePromise.then((stripeInstance) => {
+      setStripe(stripeInstance);
+      const elementsInstance = stripeInstance.elements();
+      setElements(elementsInstance);
+      
+      const cardElementInstance = elementsInstance.create('card', {
+        style: {
+          base: {
+            fontSize: '16px',
+            color: '#424242',
+            '::placeholder': {
+              color: '#aaa',
+            },
+          },
+          invalid: {
+            color: '#d32f2f',
+          },
+        },
+      });
+      setCardElement(cardElementInstance);
+    }).catch(err => console.error('Stripe initialization error:', err));
+  }, [stripePromise]);
+
+  // Mount CardElement when it's created
+  React.useEffect(() => {
+    if (cardElement && !isMountedRef.current) {
+      const cardElementContainer = document.getElementById('card-element');
+      if (cardElementContainer) {
+        // Clear any existing Stripe elements first
+        cardElementContainer.innerHTML = '';
+        
+        // Use a small timeout to ensure DOM is ready
+        const timeout = setTimeout(() => {
+          try {
+            cardElement.mount('#card-element');
+            isMountedRef.current = true;
+            console.log('CardElement mounted successfully');
+          } catch (err) {
+            console.error('Failed to mount CardElement:', err);
+            isMountedRef.current = false;
+          }
+        }, 100);
+        
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [cardElement]);
+
   const [pagination, setPagination] = React.useState<PaginatedDTO<CartItem>>({
     data: [],
     currentPage: 0,
@@ -65,15 +130,8 @@ const CartContainer = () => {
 
   const [total, setTotal] = React.useState<number>(0);
 
-  const [cardDetails, setCardDetails] = React.useState({
-    cardHolder: '',
-    cardNumber: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvv: '',
-  });
+  const [cardHolder, setCardHolder] = React.useState<string>('');
 
-  const [saveCard, setSaveCard] = React.useState<boolean>(true);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
@@ -84,14 +142,57 @@ const CartContainer = () => {
       setError(null);
       setSuccess(null);
 
-      // Validate card details
-      if (!cardDetails.cardHolder || !cardDetails.cardNumber || !cardDetails.expiryMonth || !cardDetails.expiryYear || !cardDetails.cvv) {
-        setError(getTranslation(lang, "fill_card_details") || "Please fill in all card details");
+      // Validate cardholder name
+      if (!cardHolder || !cardHolder.trim()) {
+        setError(getTranslation(lang, "fill_card_details") || "Please enter cardholder name");
         setIsLoading(false);
         return;
       }
 
-      // Step 1: Create Order
+      if (!stripe || !elements || !cardElement) {
+        setError("Payment form not ready. Please refresh the page and try again.");
+        setIsLoading(false);
+        console.error('Stripe not ready:', { stripe: !!stripe, elements: !!elements, cardElement: !!cardElement });
+        return;
+      }
+
+      // Verify CardElement is mounted in DOM
+      const cardElementContainer = document.getElementById('card-element');
+      if (!cardElementContainer || cardElementContainer.children.length === 0) {
+        setError("Payment form not fully loaded. Please wait a moment and try again.");
+        setIsLoading(false);
+        console.error('CardElement not mounted in DOM');
+        return;
+      }
+
+      // Step 1: Create Stripe Payment Method using CardElement
+      let stripePaymentMethodId = '';
+      try {
+        console.log('Creating payment method with cardElement:', cardElement);
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+          billing_details: {
+            name: cardHolder,
+          },
+        });
+
+        if (error) {
+          console.error('Payment method error:', error);
+          setError(error.message || getTranslation(lang, "payment_method_creation_failed") || "Failed to create payment method");
+          setIsLoading(false);
+          return;
+        }
+
+        stripePaymentMethodId = paymentMethod.id;
+      } catch (stripeError) {
+        setError(getTranslation(lang, "stripe_error") || "Stripe error occurred");
+        console.error('Stripe error:', stripeError);
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 2: Create Order
       const orderResponse = await createOrder(jwt.token, {
         totalAmount: total,
         status: 'CREATED'
@@ -110,13 +211,11 @@ const CartContainer = () => {
 
       const orderId = orderResponse.id;
 
-      // Step 2: Process Payment with Stripe Test Token
-      const stripeTestToken = `${cardDetails.cardNumber.replace(/\s/g, '')}-${cardDetails.expiryMonth}-${cardDetails.expiryYear}`; // Stripe test token format
-      
+      // Step 3: Process Payment with real Stripe Payment Method ID
       const paymentResponse = await processPayment(jwt.token, orderId, {
         orderId: orderId,
         amount: total,
-        stripeToken: stripeTestToken,
+        stripeToken: stripePaymentMethodId,
       });
 
       if (paymentResponse.status === 401) {
@@ -130,7 +229,7 @@ const CartContainer = () => {
         return;
       }
 
-      // Step 3: Clear Cart after successful payment
+      // Step 4: Clear Cart after successful payment
       const clearCartResponse = await clearCart(jwt.token);
       if (clearCartResponse.status === 401) {
         navigate("/login");
@@ -140,13 +239,10 @@ const CartContainer = () => {
       setSuccess(getTranslation(lang, "order_placed_successfully") || "Order placed successfully!");
       
       // Reset form
-      setCardDetails({
-        cardHolder: '',
-        cardNumber: '',
-        expiryMonth: '',
-        expiryYear: '',
-        cvv: '',
-      });
+      setCardHolder('');
+      if (cardElement) {
+        cardElement.clear();
+      }
 
       // Reset pagination
       setPagination({
@@ -183,6 +279,13 @@ const CartContainer = () => {
   React.useEffect(() => {
     setTotal(pagination.totalPrice);
   }, [pagination.data]);
+
+  // Cleanup mounted element on unmount
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
@@ -273,75 +376,44 @@ const CartContainer = () => {
                 <CreditCardIcon />
                 <Typography fontWeight={600}>{getTranslation(lang, "card")}</Typography>
               </Box>
+
+              <Alert severity="info" sx={{ fontSize: '0.875rem' }}>
+                <Typography variant="caption" fontWeight={600}>Test Card: 4242 4242 4242 4242</Typography><br/>
+                <Typography variant="caption">Expiry: Any future date | CVC: Any 3 digits</Typography>
+              </Alert>
               
               <TextField
                 fullWidth
                 label={getTranslation(lang, "cardholder_name") || "Cardholder Name"}
-                value={cardDetails.cardHolder}
-                onChange={(e) => setCardDetails({ ...cardDetails, cardHolder: e.target.value })}
+                value={cardHolder}
+                onChange={(e) => setCardHolder(e.target.value)}
                 variant="outlined"
                 size="small"
               />
               
-              <TextField
-                fullWidth
-                label={getTranslation(lang, "card_number") || "Card Number"}
-                value={cardDetails.cardNumber}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\s/g, '');
-                  if (/^\d*$/.test(value) && value.length <= 16) {
-                    const formatted = value.replace(/(\d{4})/g, '$1 ').trim();
-                    setCardDetails({ ...cardDetails, cardNumber: formatted });
-                  }
+              <Box
+                id="card-element"
+                sx={{
+                  p: 1.5,
+                  border: '1px solid rgba(0, 0, 0, 0.23)',
+                  borderRadius: '4px',
+                  backgroundColor: '#fff',
+                  minHeight: '40px',
+                  '&:hover': {
+                    borderColor: 'rgba(0, 0, 0, 0.87)',
+                  },
+                  '&.StripeElement--focus': {
+                    borderColor: '#1976d2',
+                    boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                  },
+                  '&.StripeElement--invalid': {
+                    borderColor: '#d32f2f',
+                  },
                 }}
-                placeholder="1234 5678 9012 3456"
-                variant="outlined"
-                size="small"
               />
-              
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <TextField
-                  label={getTranslation(lang, "expiry_date") || "Expiry (MM/YY)"}
-                  value={`${cardDetails.expiryMonth}${cardDetails.expiryYear ? '/' + cardDetails.expiryYear : ''}`}
-                  onChange={(e) => {
-                    let value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 4) {
-                      const month = value.slice(0, 2);
-                      const year = value.slice(2, 4);
-                      setCardDetails({ ...cardDetails, expiryMonth: month, expiryYear: year });
-                    }
-                  }}
-                  placeholder="MM/YY"
-                  variant="outlined"
-                  size="small"
-                />
-                
-                <TextField
-                  label={getTranslation(lang, "cvv") || "CVV"}
-                  value={cardDetails.cvv}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^\d*$/.test(value) && value.length <= 3) {
-                      setCardDetails({ ...cardDetails, cvv: value });
-                    }
-                  }}
-                  placeholder="123"
-                  variant="outlined"
-                  size="small"
-                  type="password"
-                />
-              </Box>
             </Box>
-
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-            <FormControlLabel 
-              control={<Checkbox checked={saveCard} onChange={(e) => setSaveCard(e.target.checked)} />} 
-              label={getTranslation(lang, "save_card_details") || "Save card details for next time"} 
-              sx={{ mb: 3 }} 
-            />
-
             <Button 
               variant="contained" 
               fullWidth 
