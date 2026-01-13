@@ -389,11 +389,6 @@ const CartContainer = () => {
                 <Typography fontWeight={600}>{getTranslation(lang, "card")}</Typography>
               </Box>
 
-              <Alert severity="info" sx={{ fontSize: '0.875rem' }}>
-                <Typography variant="caption" fontWeight={600}>Test Card: 4242 4242 4242 4242</Typography><br/>
-                <Typography variant="caption">Expiry: Any future date | CVC: Any 3 digits</Typography>
-              </Alert>
-              
               <TextField
                 fullWidth
                 label={getTranslation(lang, "cardholder_name") || "Cardholder Name"}

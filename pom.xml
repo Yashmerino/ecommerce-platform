@@ -12,6 +12,7 @@
         <module>ecommerce-platform-ui</module>
         <module>ecommerce-platform-server</module>
         <module>ecommerce-platform-payment-service</module>
+        <module>ecommerce-platform-notification-service</module>
         <module>ecommerce-platform-it</module>
     </modules>
 
