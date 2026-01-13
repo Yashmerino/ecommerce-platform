@@ -37,15 +37,15 @@ describe("Login Page Tests", () => {
 
         const title = screen.getByTestId("title");
         expect(title).toBeInTheDocument();
-        expect(title).toHaveTextContent("sign_in");
+        expect(title).toHaveTextContent("Sign In");
 
-        const usernameInput = screen.getByText("username");
+        const usernameInput = screen.getByText("Username");
         expect(usernameInput).toBeInTheDocument();
 
-        const passwordInput = screen.getByText("password");
+        const passwordInput = screen.getByText("Password");
         expect(passwordInput).toBeInTheDocument();
 
-        const registerHref = screen.getByText("create_account_message");
+        const registerHref = screen.getByText("Don't have an account? Sign Up");
         expect(registerHref).toBeInTheDocument();
 
         await act(async () => {

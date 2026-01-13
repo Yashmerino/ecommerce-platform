@@ -62,7 +62,7 @@ describe("Update Product Page Tests", () => {
         await waitFor(async () => {
             const alertSuccess = screen.getByTestId("alert-success");
             expect(alertSuccess).toBeInTheDocument();
-            expect(alertSuccess).toHaveTextContent("product_updated_successfully");
+            expect(alertSuccess).toHaveTextContent("The product has been updated successfully!");
         });
     });
 

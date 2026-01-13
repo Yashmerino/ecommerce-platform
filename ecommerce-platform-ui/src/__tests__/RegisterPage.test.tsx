@@ -29,21 +29,21 @@ describe("Register Page Tests", () => {
 
         const title = screen.getByTestId("title");
         expect(title).toBeInTheDocument();
-        expect(title).toHaveTextContent("sign_up");
+        expect(title).toHaveTextContent("Sign Up");
 
-        const roleSelection = screen.getByText("user");
+        const roleSelection = screen.getByText("User");
         expect(roleSelection).toBeInTheDocument();
 
-        const emailInput = screen.getByText("email");
+        const emailInput = screen.getByText("Email");
         expect(emailInput).toBeInTheDocument();
 
-        const usernameInput = screen.getByText("username");
+        const usernameInput = screen.getByText("Username");
         expect(usernameInput).toBeInTheDocument();
 
-        const passwordInput = screen.getByText("password");
+        const passwordInput = screen.getByText("Password");
         expect(passwordInput).toBeInTheDocument();
 
-        const loginHref = screen.getByText("have_account_message");
+        const loginHref = screen.getByText("Have already an account? Log in");
         expect(loginHref).toBeInTheDocument();
 
         clickSubmitButton();
@@ -51,7 +51,7 @@ describe("Register Page Tests", () => {
         await waitFor(() => {
             const alertSuccess = screen.getByTestId("alert-success");
             expect(alertSuccess).toBeInTheDocument();
-            expect(alertSuccess).toHaveTextContent("user_registered_successfully");
+            expect(alertSuccess).toHaveTextContent("The user has been registered successfully!");
         });
     });
 

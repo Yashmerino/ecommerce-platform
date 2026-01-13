@@ -1,13 +1,30 @@
 module.exports = {
+  preset: 'ts-jest',
   testEnvironment: "jsdom",
   roots: ["<rootDir>/src"],
   testMatch: [
     "**/__tests__/**/*.+(ts|tsx|js)",
     "**/?(*.)+(spec|test).+(ts|tsx|js)",
   ],
-  transform: {
-    "^.+\\.(ts|tsx)$": "ts-jest",
+  globals: {
+    'ts-jest': {
+      useESM: true,
+      tsconfig: {
+        jsx: 'react-jsx',
+        module: 'esnext',
+      },
+    },
   },
+  transform: {
+    "^.+\\.(ts|tsx)$": ["ts-jest", {
+      useESM: true,
+      tsconfig: {
+        jsx: 'react-jsx',
+        module: 'esnext',
+      },
+    }],
+  },
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   automock: false,
   setupFilesAfterEnv: ["./setupTests.ts"],
   moduleNameMapper: {

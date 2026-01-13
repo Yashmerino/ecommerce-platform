@@ -58,7 +58,7 @@ describe("Add Product Page Tests", () => {
         await waitFor(async () => {
             const alertSuccess = screen.getByTestId("alert-success");
             expect(alertSuccess).toBeInTheDocument();
-            expect(alertSuccess).toHaveTextContent("product_added_successfully");
+            expect(alertSuccess).toHaveTextContent("The product has been added successfully!");
         });
     });
 
