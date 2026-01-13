@@ -25,6 +25,7 @@ package com.yashmerino.ecommerce.services;
 
 import com.yashmerino.ecommerce.exceptions.UserDoesntExistException;
 import com.yashmerino.ecommerce.exceptions.UsernameAlreadyTakenException;
+import com.yashmerino.ecommerce.kafka.NotificationEventProducer;
 import com.yashmerino.ecommerce.model.Cart;
 import com.yashmerino.ecommerce.model.Role;
 import com.yashmerino.ecommerce.model.User;
@@ -36,6 +37,7 @@ import com.yashmerino.ecommerce.security.JwtProvider;
 import com.yashmerino.ecommerce.services.interfaces.AuthService;
 import com.yashmerino.ecommerce.services.interfaces.CartService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -50,6 +52,7 @@ import java.util.Optional;
 /**
  * Implementation for {@link AuthService}
  */
+@AllArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -84,23 +87,9 @@ public class AuthServiceImpl implements AuthService {
     private final CartService cartService;
 
     /**
-     * Constructor.
-     *
-     * @param authenticationManager is the auth manager.
-     * @param userRepository        is the users repository.
-     * @param roleRepository        is the roles repository.
-     * @param passwordEncoder       is the password encoder object.
-     * @param jwtProvider           is the jwt provider.
-     * @param cartService           is the cart service.
+     * Kafka Notification producer.
      */
-    public AuthServiceImpl(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, CartService cartService) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtProvider = jwtProvider;
-        this.cartService = cartService;
-    }
+    private final NotificationEventProducer notificationEventProducer;
 
     /**
      * Registers the user.
@@ -134,6 +123,8 @@ public class AuthServiceImpl implements AuthService {
 
         cart.setUser(user);
         cartService.save(cart);
+
+        notificationEventProducer.sendWelcomeNotificationRequested(user.getEmail());
     }
 
     /**

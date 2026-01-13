@@ -3,9 +3,11 @@ package com.yashmerino.ecommerce.model;
 import com.yashmerino.ecommerce.model.base.BaseEntity;
 import com.yashmerino.ecommerce.utils.ContactType;
 import com.yashmerino.ecommerce.utils.NotificationStatus;
-import com.yashmerino.ecommerce.utils.PaymentStatus;
+import com.yashmerino.ecommerce.utils.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -30,11 +32,16 @@ public class Notification extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PaymentStatus paymentStatus;
+    private NotificationType notificationType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationStatus status;
+
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Lob
+    @Column(nullable = false)
+    private String payload;
 
     @Column(nullable = false)
     private int retryCount = 0;

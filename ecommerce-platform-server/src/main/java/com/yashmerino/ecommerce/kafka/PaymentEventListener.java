@@ -2,6 +2,7 @@ package com.yashmerino.ecommerce.kafka;
 
 import com.yashmerino.ecommerce.kafka.events.PaymentResultEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentEventListener {
 
     /**
@@ -27,6 +29,10 @@ public class PaymentEventListener {
         groupId = "main-server"
     )
     public void onPaymentRequested(PaymentResultEvent event) {
-        notificationEventProducer.sendNotificationRequested(event);
+        try {
+            notificationEventProducer.sendPaymentNotificationRequested(event);
+        } catch (Exception e) {
+            log.error("Payment couldn't be processed.", e);
+        }
     }
 }

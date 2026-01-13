@@ -6,9 +6,14 @@ import com.yashmerino.ecommerce.model.Payment;
 import com.yashmerino.ecommerce.model.User;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import com.yashmerino.ecommerce.utils.ContactType;
+import com.yashmerino.ecommerce.utils.NotificationType;
+import com.yashmerino.ecommerce.utils.PaymentStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Kafka's notification events producer.
@@ -28,16 +33,42 @@ public class NotificationEventProducer {
     private final KafkaTemplate<String, NotificationRequestedEvent> kafkaTemplate;
 
     /**
-     * Sends a notification request event to Kafka topic.
+     * Sends a payment notification request event to Kafka topic.
      *
      * @param event is the Kafka event object.
      */
-    public void sendNotificationRequested(PaymentResultEvent event) {
+    public void sendPaymentNotificationRequested(PaymentResultEvent event) {
         Payment payment = this.paymentRepository.findByOrderId(event.orderId());
         User user = payment.getOrder().getUser();
 
-        NotificationRequestedEvent notificationRequestedEvent = new NotificationRequestedEvent(payment.getId(), event.orderId(), payment.getAmount(), ContactType.EMAIL, user.getEmail(), event.status());
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("paymentId", payment.getId());
+        payload.put("orderId", event.orderId());
+        payload.put("amount", payment.getAmount());
 
-        kafkaTemplate.send("notification.requested", event.orderId().toString(), notificationRequestedEvent);
+        NotificationRequestedEvent notificationRequestedEvent =
+                new NotificationRequestedEvent(
+                        PaymentStatus.SUCCEEDED.equals(event.status()) ? NotificationType.PAYMENT_SUCCESS : NotificationType.PAYMENT_FAILED,
+                        ContactType.EMAIL,
+                        user.getEmail(),
+                        payload
+                );
+
+        kafkaTemplate.send("notification.requested", notificationRequestedEvent);
+    }
+
+    /**
+     * Sends a welcome notification request event to Kafka topic.
+     */
+    public void sendWelcomeNotificationRequested(final String email) {
+        NotificationRequestedEvent notificationRequestedEvent =
+                new NotificationRequestedEvent(
+                        NotificationType.USER_REGISTERED,
+                        ContactType.EMAIL,
+                        email,
+                        null
+                );
+
+        kafkaTemplate.send("notification.requested", notificationRequestedEvent);
     }
 }
