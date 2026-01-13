@@ -67,7 +67,12 @@ public class Product extends BaseEntity {
      * Product's categories.
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Category> categories;
+    @JoinTable(
+        name = "products_categories",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "categories_id")
+    )
+    private Set<Category> categories = new HashSet<>();
 
     /**
      * Product's seller.

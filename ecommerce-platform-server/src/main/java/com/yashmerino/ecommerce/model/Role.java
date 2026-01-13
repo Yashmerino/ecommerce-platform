@@ -42,8 +42,8 @@ public class Role {
      * Role's id.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;    
 
     /**
      * Role's name.
