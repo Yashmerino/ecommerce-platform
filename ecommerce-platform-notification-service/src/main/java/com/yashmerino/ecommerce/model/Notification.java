@@ -5,10 +5,7 @@ import com.yashmerino.ecommerce.utils.ContactType;
 import com.yashmerino.ecommerce.utils.NotificationStatus;
 import com.yashmerino.ecommerce.utils.NotificationType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +14,7 @@ import java.time.LocalDateTime;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity(name = "notifications")
