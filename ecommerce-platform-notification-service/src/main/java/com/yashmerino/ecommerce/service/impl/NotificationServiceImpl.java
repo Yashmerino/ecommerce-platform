@@ -13,8 +13,11 @@ import com.yashmerino.ecommerce.service.NotificationTemplate;
 import com.yashmerino.ecommerce.utils.NotificationStatus;
 import com.yashmerino.ecommerce.utils.NotificationType;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -26,7 +29,7 @@ import java.util.Map;
  * Payment service implementation.
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class NotificationServiceImpl implements NotificationService {
 
@@ -71,22 +74,56 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
 
         try {
-            NotificationTemplate template = templates.get(event.notificationType());
-            NotificationContent content = template.build(event.payload());
-
-            NotificationSender sender = senderFactory.getSender(event.contactType().toString());
-            sender.send(event.contact(), content);
-
-            notification.setStatus(NotificationStatus.SENT);
-            notification.setSentAt(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
-            notificationRepository.save(notification);
+            sendNotificationWithRetry(notification, event);
         } catch (Exception e) {
-            // TODO: Implement retryable???
-            log.error("Notification couldn't be sent", e);
-
-            notification.setLastError(e.getMessage());
-            notification.setStatus(NotificationStatus.FAILED);
-            notificationRepository.save(notification);
+            log.error("Notification failed after all retry attempts", e);
         }
+    }
+
+    /**
+     * Sends notification with automatic retry on failure.
+     * Uses Spring Retry for exponential backoff (1s, 2s, 4s).
+     *
+     * @param notification the notification entity
+     * @param event the notification event
+     */
+    @Retryable(
+        retryFor = Exception.class,
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 1000, multiplier = 2),
+        listeners = {"retryListener"}
+    )
+    private void sendNotificationWithRetry(Notification notification, NotificationRequestedEvent event) {
+        notification.setRetryCount(notification.getRetryCount() + 1);
+        
+        log.info("Attempting to send notification (attempt {})", notification.getRetryCount());
+
+        NotificationTemplate template = templates.get(event.notificationType());
+        NotificationContent content = template.build(event.payload());
+
+        NotificationSender sender = senderFactory.getSender(event.contactType().toString());
+        sender.send(event.contact(), content);
+
+        notification.setStatus(NotificationStatus.SENT);
+        notification.setSentAt(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
+        notificationRepository.save(notification);
+        
+        log.info("Notification sent successfully after {} attempts", notification.getRetryCount());
+    }
+
+    /**
+     * Recovery method called after all retry attempts fail.
+     *
+     * @param e the exception that caused the failure
+     * @param notification the notification entity
+     * @param event the notification event
+     */
+    @Recover
+    private void handleNotificationFailure(Exception e, Notification notification, NotificationRequestedEvent event) {
+        log.error("Notification failed after {} attempts: {}", notification.getRetryCount(), e.getMessage());
+        
+        notification.setStatus(NotificationStatus.FAILED);
+        notification.setLastError(e.getMessage());
+        notificationRepository.save(notification);
     }
 }

@@ -24,6 +24,8 @@ package com.yashmerino.ecommerce.controllers;
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yashmerino.ecommerce.kafka.NotificationEventProducer;
+import com.yashmerino.ecommerce.model.dto.PaymentDTO;
 import com.yashmerino.ecommerce.model.dto.auth.LoginDTO;
 import com.yashmerino.ecommerce.model.dto.auth.RegisterDTO;
 import jakarta.transaction.Transactional;
@@ -34,6 +36,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -41,6 +44,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static com.yashmerino.ecommerce.utils.Role.USER;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -81,6 +86,12 @@ class AuthControllerTest {
      */
     private LoginDTO loginDTO;
 
+    /**
+     * Notification event producer mock.
+     */
+    @MockBean
+    private NotificationEventProducer notificationEventProducer;
+
     @BeforeEach
     void setup() {
         registerDTO = new RegisterDTO();
@@ -101,6 +112,8 @@ class AuthControllerTest {
      */
     @Test
     void registerSuccessfulTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO)))
                 .andExpect(status().isOk())
@@ -115,6 +128,8 @@ class AuthControllerTest {
      */
     @Test
     void registerExistingUserTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
 
@@ -189,6 +204,8 @@ class AuthControllerTest {
      */
     @Test
     void loginSuccessfulTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
 
@@ -219,6 +236,8 @@ class AuthControllerTest {
      */
     @Test
     void loginNoUsernameTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
 
@@ -238,6 +257,8 @@ class AuthControllerTest {
      */
     @Test
     void loginNoPasswordTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
         mvc.perform(post("/api/auth/register").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
 
