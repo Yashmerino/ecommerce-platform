@@ -10,6 +10,7 @@ import com.yashmerino.ecommerce.service.StripePaymentService;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
     /**
@@ -60,7 +62,9 @@ public class PaymentServiceImpl implements PaymentService {
             paymentRepository.save(payment);
 
             resultProducer.sendSucceeded(event.orderId());
+            log.info("Payment with ID {} for order with ID {} was successfully made.", event.paymentId(), event.orderId());
         } catch (Exception e) {
+            log.error("Payment with ID {} for order with ID {} couldn't be made.", event.paymentId(), event.orderId(), e);
             paymentRepository.save(
                     new Payment(event.orderId(), null, event.amount(), PaymentStatus.FAILED)
             );

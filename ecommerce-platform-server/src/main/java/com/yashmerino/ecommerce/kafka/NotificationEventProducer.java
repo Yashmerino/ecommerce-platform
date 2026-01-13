@@ -35,7 +35,8 @@ public class NotificationEventProducer {
     public void sendNotificationRequested(PaymentResultEvent event) {
         Payment payment = this.paymentRepository.findByOrderId(event.orderId());
         User user = payment.getOrder().getUser();
-        NotificationRequestedEvent notificationRequestedEvent = new NotificationRequestedEvent(payment.getId(), event.orderId(), payment.getAmount(), ContactType.EMAIL, user.getEmail());
+
+        NotificationRequestedEvent notificationRequestedEvent = new NotificationRequestedEvent(payment.getId(), event.orderId(), payment.getAmount(), ContactType.EMAIL, user.getEmail(), event.status());
 
         kafkaTemplate.send("notification.requested", event.orderId().toString(), notificationRequestedEvent);
     }

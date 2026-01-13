@@ -1,6 +1,7 @@
 package com.yashmerino.ecommerce.kafka.events;
 
 import com.yashmerino.ecommerce.utils.ContactType;
+import com.yashmerino.ecommerce.utils.PaymentStatus;
 
 import java.math.BigDecimal;
 
@@ -12,11 +13,13 @@ import java.math.BigDecimal;
  * @param amount is the amount of the payment.
  * @param contactType is the contact type. Ex: email, sms
  * @param contact is the contact data.
+ * @param paymentStatus is the payment status. Fail or Success.
  */
 public record NotificationRequestedEvent(
         Long paymentId,
         Long orderId,
         BigDecimal amount,
         ContactType contactType,
-        String contact
+        String contact,
+        PaymentStatus paymentStatus
 ) {}

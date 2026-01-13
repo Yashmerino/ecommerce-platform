@@ -20,7 +20,6 @@ public class NotificationEventListener {
         groupId = "notification-service"
     )
     public void onNotificationRequested(NotificationRequestedEvent event) {
-        // TODO: Send the payment status in event
         notificationService.sendNotification(event);
     }
 }

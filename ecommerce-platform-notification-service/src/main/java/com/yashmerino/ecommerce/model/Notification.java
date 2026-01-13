@@ -3,7 +3,7 @@ package com.yashmerino.ecommerce.model;
 import com.yashmerino.ecommerce.model.base.BaseEntity;
 import com.yashmerino.ecommerce.utils.ContactType;
 import com.yashmerino.ecommerce.utils.NotificationStatus;
-import com.yashmerino.ecommerce.utils.NotificationType;
+import com.yashmerino.ecommerce.utils.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,14 +30,11 @@ public class Notification extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private NotificationType notificationType;
+    private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationStatus status;
-
-    @Column(columnDefinition = "TEXT")
-    private String payload;
 
     @Column(nullable = false)
     private int retryCount = 0;

@@ -7,10 +7,12 @@ import com.yashmerino.ecommerce.service.NotificationSender;
 import com.yashmerino.ecommerce.service.NotificationSenderFactory;
 import com.yashmerino.ecommerce.service.NotificationService;
 import com.yashmerino.ecommerce.utils.NotificationStatus;
-import com.yashmerino.ecommerce.utils.NotificationType;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * Payment service implementation.
@@ -38,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void sendNotification(NotificationRequestedEvent event) {
         Notification notification = Notification.builder()
-                .notificationType(NotificationType.PAYMENT_SUCCESS) // TODO: Replace payment status
+                .paymentStatus(event.paymentStatus())
                 .contact(event.contact())
                 .contactType(event.contactType())
                 .status(NotificationStatus.PENDING)
@@ -52,8 +54,10 @@ public class NotificationServiceImpl implements NotificationService {
             sender.send(event);
 
             notification.setStatus(NotificationStatus.SENT);
+            notification.setSentAt(LocalDateTime.from(Instant.now()));
             notificationRepository.save(notification);
         } catch (Exception e) {
+            // TODO: Implement retryable???
             notification.setLastError(e.getMessage());
             notification.setStatus(NotificationStatus.FAILED);
             notificationRepository.save(notification);
