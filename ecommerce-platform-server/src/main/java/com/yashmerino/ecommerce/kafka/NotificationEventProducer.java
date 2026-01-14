@@ -38,7 +38,10 @@ public class NotificationEventProducer {
      * @param event is the Kafka event object.
      */
     public void sendPaymentNotificationRequested(PaymentResultEvent event) {
-        Payment payment = this.paymentRepository.findByOrderId(event.orderId());
+        Payment payment = this.paymentRepository.findById(event.paymentId()).orElse(null);
+        if (payment == null) {
+            return;
+        }
         User user = payment.getOrder().getUser();
 
         Map<String, Object> payload = new HashMap<>();

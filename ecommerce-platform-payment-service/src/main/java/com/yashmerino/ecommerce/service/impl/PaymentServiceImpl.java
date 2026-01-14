@@ -59,17 +59,19 @@ public class PaymentServiceImpl implements PaymentService {
                     PaymentStatus.SUCCEEDED
             );
 
-            paymentRepository.save(payment);
+            payment = paymentRepository.save(payment);
 
-            resultProducer.sendSucceeded(event.orderId());
-            log.info("Payment with ID {} for order with ID {} was successfully made.", event.paymentId(), event.orderId());
+            // Send back the original paymentId from server, not the new ID from payment-service DB
+            resultProducer.sendSucceeded(event.orderId(), event.paymentId());
+            log.info("Payment processed successfully for order with ID {} (server payment ID: {})", event.orderId(), event.paymentId());
         } catch (Exception e) {
-            log.error("Payment with ID {} for order with ID {} couldn't be made.", event.paymentId(), event.orderId(), e);
-            paymentRepository.save(
+            log.error("Payment for order with ID {} couldn't be made.", event.orderId(), e);
+            Payment failedPayment = paymentRepository.save(
                     new Payment(event.orderId(), null, event.amount(), PaymentStatus.FAILED)
             );
 
-            resultProducer.sendFailed(event.orderId(), e.getMessage());
+            // Send back the original paymentId from server
+            resultProducer.sendFailed(event.orderId(), event.paymentId(), e.getMessage());
         }
     }
 }

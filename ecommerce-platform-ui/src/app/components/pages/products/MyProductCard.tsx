@@ -36,9 +36,12 @@ import { deleteProduct, getProductPhoto } from '../../../api/ProductRequest';
 import { getTranslation } from '../../../../i18n/i18n';
 import NoPhoto from "../../../../img/no-photo.jpg";
 import { useNavigate } from 'react-router-dom';
+import ConfirmationDialog from '../../common/ConfirmationDialog';
 
 const MyProductCard = ({ id, name, price, categories, description }: Product) => {
     const [isDeleted, setIsDeleted] = React.useState<boolean>(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState<boolean>(false);
+    const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
     const [photo, setPhoto] = React.useState(NoPhoto);
     const navigate = useNavigate();
     const lang = useAppSelector(state => state.lang.lang);
@@ -49,8 +52,13 @@ const MyProductCard = ({ id, name, price, categories, description }: Product) =>
         setIsDeleted(false);
     };
 
-    const handleDeleteProduct = async (event: any) => {
+    const handleDeleteClick = (event: any) => {
         event.stopPropagation();
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        setIsDeleting(true);
         setIsDeleted(false);
 
         const response = await deleteProduct(jwt.token, id);
@@ -65,6 +73,8 @@ const MyProductCard = ({ id, name, price, categories, description }: Product) =>
             setIsDeleted(true);
         }
 
+        setIsDeleting(false);
+        setDeleteDialogOpen(false);
         location.reload();
     }
 
@@ -184,7 +194,7 @@ const MyProductCard = ({ id, name, price, categories, description }: Product) =>
                 color="error" 
                 data-testid="delete-icon" 
                 aria-label="delete" 
-                onClick={(e) => handleDeleteProduct(e)}
+                onClick={(e) => handleDeleteClick(e)}
                 sx={{
                     border: "1px solid",
                     transition: 'all 0.2s',
@@ -198,6 +208,19 @@ const MyProductCard = ({ id, name, price, categories, description }: Product) =>
                 <DeleteIcon />
             </IconButton>
         </Box>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmationDialog
+            open={deleteDialogOpen}
+            title={getTranslation(lang, 'confirm_delete') || 'Confirm Delete'}
+            message={getTranslation(lang, 'confirm_delete_product') || 'Are you sure you want to delete this product? This action cannot be undone.'}
+            confirmText={getTranslation(lang, 'delete') || 'Delete'}
+            cancelText={getTranslation(lang, 'cancel') || 'Cancel'}
+            onConfirm={handleDeleteConfirm}
+            onCancel={() => setDeleteDialogOpen(false)}
+            loading={isDeleting}
+            confirmColor="error"
+        />
     </>
     );
 }

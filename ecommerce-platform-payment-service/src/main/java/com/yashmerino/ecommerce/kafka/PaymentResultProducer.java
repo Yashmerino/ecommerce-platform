@@ -22,18 +22,26 @@ public class PaymentResultProducer {
      * Sends a successful event on kafka topic.
      *
      * @param orderId is the order ID.
+     * @param paymentId is the payment ID.
      */
-    public void sendSucceeded(Long orderId) {
+    public void sendSucceeded(Long orderId, Long paymentId) {
         kafkaTemplate.send(
                 "payment.result",
-            new PaymentResultEvent(orderId, PaymentStatus.SUCCEEDED, null)
+            new PaymentResultEvent(orderId, paymentId, PaymentStatus.SUCCEEDED, null)
         );
     }
 
-    public void sendFailed(Long orderId, String errorMessage) {
+    /**
+     * Sends a failed event on kafka topic.
+     *
+     * @param orderId is the order ID.
+     * @param paymentId is the payment ID.
+     * @param errorMessage is the error message.
+     */
+    public void sendFailed(Long orderId, Long paymentId, String errorMessage) {
         kafkaTemplate.send(
             "payment.result",
-            new PaymentResultEvent(orderId, PaymentStatus.FAILED, errorMessage)
+            new PaymentResultEvent(orderId, paymentId, PaymentStatus.FAILED, errorMessage)
         );
     }
 }

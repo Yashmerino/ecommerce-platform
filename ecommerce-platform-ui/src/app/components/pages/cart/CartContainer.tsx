@@ -401,21 +401,12 @@ const CartContainer = () => {
               <Box
                 id="card-element"
                 sx={{
-                  p: 1.5,
-                  border: '1px solid rgba(0, 0, 0, 0.23)',
-                  borderRadius: '4px',
-                  backgroundColor: '#fff',
-                  minHeight: '40px',
-                  '&:hover': {
-                    borderColor: 'rgba(0, 0, 0, 0.87)',
-                  },
-                  '&.StripeElement--focus': {
-                    borderColor: '#1976d2',
-                    boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
-                  },
-                  '&.StripeElement--invalid': {
-                    borderColor: '#d32f2f',
-                  },
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 2,
+                  bgcolor: 'background.paper',
+                  minHeight: '40px'
                 }}
               />
             </Box>

@@ -9,6 +9,7 @@ import AddProductPage from './components/pages/products/AddProductPage';
 import MyProductsPage from './components/pages/products/MyProductsPage';
 import MyProfilePage from './components/pages/user/MyProfilePage';
 import EditProductPage from './components/pages/products/EditProductPage';
+import MyOrdersPage from './components/pages/orders/MyOrdersPage';
 import { useAppSelector } from './hooks';
 import SearchPage from './components/pages/search/SearchPage';
 
@@ -25,6 +26,7 @@ const Main = () => {
             <Route path='/product/add' element={jwt.length > 0 ? <AddProductPage /> : <Navigate to='/login' />} />
             <Route path='/profile/products' element={jwt.length > 0 ? <MyProductsPage /> : <Navigate to='/login' />} />
             <Route path='/profile' element={jwt.length > 0 ? <MyProfilePage /> : <Navigate to='/login' />} />
+            <Route path='/orders' element={jwt.length > 0 ? <MyOrdersPage /> : <Navigate to='/login' />} />
             <Route path='/product/edit' element={jwt.length > 0 ? <EditProductPage /> : <Navigate to='/login' />} />
             <Route path='/search' element={jwt.length > 0 ? <SearchPage /> : <Navigate to='/login' />} />
         </Routes>

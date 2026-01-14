@@ -35,6 +35,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getTranslation } from '../../../../i18n/i18n';
 import NoPhoto from "../../../../img/no-photo.jpg";
 import { useNavigate } from 'react-router';
+import ConfirmationDialog from '../../common/ConfirmationDialog';
 
 interface CartItemProps {
     id: number,
@@ -47,12 +48,19 @@ interface CartItemProps {
 
 const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartItemProps) => {
   const [photo, setPhoto] = React.useState(NoPhoto);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const lang = useAppSelector(state => state.lang.lang);
   const jwt = useAppSelector(state => state.jwt);
   const { showSnackbar } = useSnackbar();
 
-  const handleDeleteProduct = async () => {
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
     const response = await deleteCartItem(jwt.token, id);
 
     if (response.status) {
@@ -66,7 +74,10 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
       showSnackbar(getTranslation(lang, "cartitem_deleted_successfully"), "success");
       onUpdate(id, 0);
     }
-  }
+    
+    setIsDeleting(false);
+    setDeleteDialogOpen(false);
+  };
 
   const handleSaveProduct = async () => {
     const updatedQuantity = (document.getElementById(`quantity-input-${id}`) as HTMLInputElement).value;
@@ -195,7 +206,7 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
             color="error"
             aria-label="delete from shopping cart"
             data-testid="delete-icon"
-            onClick={handleDeleteProduct}
+            onClick={handleDeleteClick}
             sx={{
               p: 1,
               borderRadius: 1,
@@ -211,6 +222,19 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
           </IconButton>
         </Box>
       </Paper>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title={getTranslation(lang, 'confirm_delete') || 'Confirm Delete'}
+        message={getTranslation(lang, 'confirm_delete_cart_item') || 'Are you sure you want to remove this item from your cart?'}
+        confirmText={getTranslation(lang, 'delete') || 'Delete'}
+        cancelText={getTranslation(lang, 'cancel') || 'Cancel'}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteDialogOpen(false)}
+        loading={isDeleting}
+        confirmColor="error"
+      />
     </>
   );
 }

@@ -25,16 +25,28 @@ package com.yashmerino.ecommerce.services;
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import com.yashmerino.ecommerce.model.Order;
+import com.yashmerino.ecommerce.model.Payment;
 import com.yashmerino.ecommerce.model.User;
 import com.yashmerino.ecommerce.model.dto.OrderDTO;
+import com.yashmerino.ecommerce.model.dto.OrderWithPaymentDTO;
+import com.yashmerino.ecommerce.model.dto.PaginatedDTO;
 import com.yashmerino.ecommerce.repositories.OrderRepository;
+import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import com.yashmerino.ecommerce.services.interfaces.OrderService;
 import com.yashmerino.ecommerce.services.interfaces.UserService;
 import com.yashmerino.ecommerce.utils.RequestBodyToEntityConverter;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation for order service.
@@ -47,6 +59,11 @@ public class OrderServiceImpl implements OrderService {
      * Order repository.
      */
     private final OrderRepository orderRepository;
+
+    /**
+     * Payment repository.
+     */
+    private final PaymentRepository paymentRepository;
 
     /**
      * User service.
@@ -71,5 +88,44 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
 
         return order.getId();
+    }
+
+    /**
+     * Gets all orders for the current user with their payment information.
+     *
+     * @param page page number
+     * @param size page size
+     * @return paginated orders with payments.
+     */
+    @Override
+    public PaginatedDTO<OrderWithPaymentDTO> getUserOrders(int page, int size) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(userDetails.getUsername());
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orderPage = orderRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
+        
+        List<OrderWithPaymentDTO> result = new ArrayList<>();
+
+        for (Order order : orderPage.getContent()) {
+            OrderWithPaymentDTO dto = new OrderWithPaymentDTO();
+            dto.setOrderId(order.getId());
+            dto.setTotalAmount(order.getTotalAmount());
+            dto.setOrderStatus(order.getStatus());
+            dto.setCreatedAt(order.getCreatedAt() != null ? order.getCreatedAt().toInstant(ZoneOffset.UTC) : null);
+
+            Payment payment = paymentRepository.findFirstByOrderIdOrderByCreatedAtDesc(order.getId());
+            if (payment != null) {
+                dto.setPaymentId(payment.getId());
+                dto.setPaymentAmount(payment.getAmount());
+                dto.setPaymentStatus(payment.getStatus());
+                dto.setPaymentCreatedAt(payment.getCreatedAt() != null ? payment.getCreatedAt().toInstant(ZoneOffset.UTC) : null);
+            }
+
+            result.add(dto);
+        }
+
+        Page<OrderWithPaymentDTO> dtoPage = new PageImpl<>(result, pageable, orderPage.getTotalElements());
+        return PaginatedDTO.buildPaginatedResponse(dtoPage);
     }
 }

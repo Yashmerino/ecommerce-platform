@@ -33,6 +33,27 @@ export interface OrderResponse {
   status: string;
 }
 
+export interface OrderWithPayment {
+    orderId: number;
+    totalAmount: number;
+    orderStatus: string;
+    createdAt: string;
+    paymentId: number;
+    paymentAmount: number;
+    paymentStatus: string;
+    paymentCreatedAt: string;
+}
+
+export interface PaginatedOrderResponse {
+    data: OrderWithPayment[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    pageSize: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
 /**
  * API Request to create a new order.
  * @param token The JWT Token
@@ -62,3 +83,25 @@ export const createOrder = async (token: string, orderData: CreateOrderRequest):
 
     return response.json();
 };
+
+/**
+ * Returns user's orders with payment information.
+ * @param token The JWT Token
+ * @param page Page number (default 0)
+ * @param size Page size (default 10)
+ */
+export const getUserOrders = async (token: string, page: number = 0, size: number = 10): Promise<PaginatedOrderResponse | Response> => {
+    const response = await fetch(`${API_BASE_URL}/api/order/my-orders?page=${page}&size=${size}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        return response;
+    }
+
+    return await response.json();
+}

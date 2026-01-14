@@ -165,4 +165,9 @@ public class SwaggerMessages {
      * Message when user information is successfully updated.
      */
     public static final String USER_INFO_UPDATED = "User information was successfully updated.";
+
+    /**
+     * Message when user orders are successfully returned.
+     */
+    public static final String ORDERS_RETURNED = "Order information was successfully retrieved.";
 }

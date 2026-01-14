@@ -32,9 +32,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Orders' repository.
  */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    /**
+     * Find all orders for a specific user with pagination.
+     *
+     * @param userId the user's ID
+     * @param pageable pagination information
+     * @return page of orders
+     */
+    Page<Order> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 }

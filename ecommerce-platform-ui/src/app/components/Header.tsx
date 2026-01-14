@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AddIcon from '@mui/icons-material/Add';
 import SellIcon from '@mui/icons-material/Sell';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 
 import { useNavigate } from 'react-router-dom';
 import Lang from '../../i18n/LangEnum';
@@ -99,6 +100,10 @@ const Header = () => {
         navigate("/profile/products");
     }
 
+    const handleMyOrders = () => {
+        navigate("/orders");
+    }
+
     const handleLogout = () => {
         dispatch(updateJwt(""));
         navigate("/login");
@@ -169,10 +174,16 @@ const Header = () => {
                             }}
                         >
                             {roles[0].name === "USER" && (
-                                <MenuItem onClick={handleMyCart}>
-                                    <ShoppingCartIcon sx={{ mr: 1.5 }} />
-                                    <Typography>{getTranslation(lang, "my_cart")}</Typography>
-                                </MenuItem>
+                                <>
+                                    <MenuItem onClick={handleMyOrders}>
+                                        <ReceiptIcon sx={{ mr: 1.5 }} />
+                                        <Typography>{getTranslation(lang, "my_orders") || "My Orders"}</Typography>
+                                    </MenuItem>
+                                    <MenuItem onClick={handleMyCart}>
+                                        <ShoppingCartIcon sx={{ mr: 1.5 }} />
+                                        <Typography>{getTranslation(lang, "my_cart")}</Typography>
+                                    </MenuItem>
+                                </>
                             )}
                             {roles[0].name === "SELLER" && (
                                 <>
@@ -270,23 +281,43 @@ const Header = () => {
                         </Button>
 
                         {roles[0].name === "USER" && (
-                            <Button
-                                startIcon={<ShoppingCartIcon />}
-                                onClick={handleMyCart}
-                                id="my-cart-button"
-                                sx={{
-                                    color: 'text.primary',
-                                    borderRadius: 2,
-                                    px: 2,
-                                    transition: 'all 0.2s',
-                                    '&:hover': {
-                                        bgcolor: 'primary.main',
-                                        color: 'white',
-                                    },
-                                }}
-                            >
-                                {getTranslation(lang, "my_cart")}
-                            </Button>
+                            <>
+                                <Button
+                                    startIcon={<ShoppingCartIcon />}
+                                    onClick={handleMyCart}
+                                    id="my-cart-button"
+                                    sx={{
+                                        color: 'text.primary',
+                                        borderRadius: 2,
+                                        px: 2,
+                                        transition: 'all 0.2s',
+                                        '&:hover': {
+                                            bgcolor: 'primary.main',
+                                            color: 'white',
+                                        },
+                                    }}
+                                >
+                                    {getTranslation(lang, "my_cart")}
+                                </Button>
+
+                                <Button
+                                    startIcon={<ReceiptIcon />}
+                                    onClick={handleMyOrders}
+                                    id="my-orders-button"
+                                    sx={{
+                                        color: 'text.primary',
+                                        borderRadius: 2,
+                                        px: 2,
+                                        transition: 'all 0.2s',
+                                        '&:hover': {
+                                            bgcolor: 'primary.main',
+                                            color: 'white',
+                                        },
+                                    }}
+                                >
+                                    {getTranslation(lang, "my_orders") || "My Orders"}
+                                </Button>
+                            </>
                         )}
 
                         {roles[0].name === "SELLER" && (
