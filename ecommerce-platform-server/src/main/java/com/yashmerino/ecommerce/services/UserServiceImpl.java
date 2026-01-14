@@ -31,6 +31,8 @@ import com.yashmerino.ecommerce.model.dto.auth.UserInfoDTO;
 import com.yashmerino.ecommerce.repositories.UserRepository;
 import com.yashmerino.ecommerce.services.interfaces.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -84,6 +86,7 @@ public class UserServiceImpl implements UserService {
      * @return <code>User</code>
      */
     @Override
+    @Cacheable(value = "userPhotos", key = "#username", condition = "#result != null && #result.photo != null")
     public User getByUsername(String username) {
         Optional<User> userOptional = userRepository.findByUsername(username);
 
@@ -119,6 +122,7 @@ public class UserServiceImpl implements UserService {
      * @param username is the user's username.
      */
     @Override
+    @CacheEvict(value = "userPhotos", key = "#username")
     public void updatePhoto(String username, MultipartFile photo) {
         User user = this.getByUsername(username);
 

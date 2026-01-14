@@ -27,6 +27,7 @@ package com.yashmerino.ecommerce.services;
 import com.yashmerino.ecommerce.model.Category;
 import com.yashmerino.ecommerce.repositories.CategoryRepository;
 import com.yashmerino.ecommerce.services.interfaces.CategoryService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -57,6 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @return a list of categories.
      */
     @Override
+    @Cacheable("categories")
     public List<Category> getCategories() {
         return categoryRepository.findAll();
     }

@@ -39,6 +39,19 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   ecommerce-server:
     build:
       context: ../ecommerce-platform-server
@@ -70,11 +83,16 @@ services:
       - SPRING_KAFKA_CONSUMER_GROUP_ID=main-server
       - SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET=earliest
       - SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES=com.yashmerino.ecommerce.kafka.events
+      # Redis
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
     depends_on:
       mysql:
         condition: service_healthy
       kafka:
         condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - ecommerce-network
 

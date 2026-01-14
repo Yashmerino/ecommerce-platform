@@ -37,6 +37,8 @@ import com.yashmerino.ecommerce.services.interfaces.UserService;
 import com.yashmerino.ecommerce.utils.RequestBodyToEntityConverter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -199,6 +201,7 @@ public class ProductServiceImpl implements ProductService {
      * @param photo is the product's photo.
      */
     @Override
+    @CacheEvict(value = "productPhotos", key = "#id")
     public void updatePhoto(Long id, MultipartFile photo) {
         Product product = this.getProduct(id);
 
