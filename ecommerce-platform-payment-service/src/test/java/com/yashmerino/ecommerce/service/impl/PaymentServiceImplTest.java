@@ -61,8 +61,8 @@ class PaymentServiceImplTest {
 
         verify(stripePaymentService).charge(amount, "EUR", stripeToken);
         verify(paymentRepository).save(any(Payment.class));
-        verify(resultProducer).sendSucceeded(orderId);
-        verify(resultProducer, never()).sendFailed(anyLong(), anyString());
+        verify(resultProducer).sendSucceeded(orderId, paymentId);
+        verify(resultProducer, never()).sendFailed(anyLong(), anyLong(), anyString());
 
         ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
         verify(paymentRepository).save(paymentCaptor.capture());
@@ -92,8 +92,8 @@ class PaymentServiceImplTest {
 
         verify(stripePaymentService).charge(amount, "EUR", stripeToken);
         verify(paymentRepository).save(any(Payment.class));
-        verify(resultProducer).sendFailed(orderId, errorMessage);
-        verify(resultProducer, never()).sendSucceeded(anyLong());
+        verify(resultProducer).sendFailed(orderId, paymentId, errorMessage);
+        verify(resultProducer, never()).sendSucceeded(anyLong(), anyLong());
 
         ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
         verify(paymentRepository).save(paymentCaptor.capture());
@@ -118,7 +118,7 @@ class PaymentServiceImplTest {
         paymentService.processPayment(smallEvent);
 
         verify(paymentRepository).save(any(Payment.class));
-        verify(resultProducer).sendSucceeded(3L);
+        verify(resultProducer).sendSucceeded(3L, 102L);
 
         // Test with large amount
         BigDecimal largeAmount = new BigDecimal("9999.99");
