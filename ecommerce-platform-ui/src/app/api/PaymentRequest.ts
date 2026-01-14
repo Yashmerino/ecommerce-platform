@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
-import { authenticatedPost } from "../utils/AuthInterceptor";
+import { authenticatedPost } from "./AuthInterceptor";
 
 export interface PaymentRequest {
   orderId: number;

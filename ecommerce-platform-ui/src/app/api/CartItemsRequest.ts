@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
-import { authenticatedGet, authenticatedDelete, authenticatedPost } from "../utils/AuthInterceptor";
+import { authenticatedGet, authenticatedDelete, authenticatedPost } from "./AuthInterceptor";
 
 /**
  * API Request to get user's cart items.

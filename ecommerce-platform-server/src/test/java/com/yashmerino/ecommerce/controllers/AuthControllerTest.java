@@ -28,6 +28,7 @@ import com.yashmerino.ecommerce.kafka.NotificationEventProducer;
 import com.yashmerino.ecommerce.model.dto.PaymentDTO;
 import com.yashmerino.ecommerce.model.dto.auth.LoginDTO;
 import com.yashmerino.ecommerce.model.dto.auth.RegisterDTO;
+import jakarta.servlet.http.Cookie;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -310,9 +311,9 @@ class AuthControllerTest {
         String loginResponse = loginResult.getResponse().getContentAsString();
         String refreshToken = objectMapper.readTree(loginResponse).get("refreshToken").asText();
 
-        // Test refresh endpoint
-        String refreshRequest = "{\"refreshToken\":\"" + refreshToken + "\"}";
-        mvc.perform(post("/api/auth/refresh").contentType(APPLICATION_JSON).content(refreshRequest))
+        // Test refresh endpoint by sending refresh token as cookie
+        mvc.perform(post("/api/auth/refresh")
+                .cookie(new Cookie("refreshToken", refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
                 .andExpect(jsonPath("$.refreshToken").value(refreshToken));
@@ -325,10 +326,9 @@ class AuthControllerTest {
      */
     @Test
     void refreshTokenInvalidTest() throws Exception {
-        String refreshRequest = "{\"refreshToken\":\"invalid-token\"}";
-        
-        mvc.perform(post("/api/auth/refresh").contentType(APPLICATION_JSON).content(refreshRequest))
-                .andExpect(status().isInternalServerError());
+        mvc.perform(post("/api/auth/refresh")
+                .cookie(new Cookie("refreshToken", "invalid-token")))
+                .andExpect(status().isUnauthorized());
     }
 
     /**

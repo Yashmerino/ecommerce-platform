@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
-import { authenticatedPost, authenticatedGet } from "../utils/AuthInterceptor";
+import { authenticatedPost, authenticatedGet } from "./AuthInterceptor";
 
 export interface CreateOrderRequest {
   totalAmount: number;

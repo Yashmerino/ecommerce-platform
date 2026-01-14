@@ -23,7 +23,7 @@
  */
 import { API_BASE_URL } from "../../env-config";
 import { Category } from "../components/pages/products/AddProductPage";
-import { authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete } from "../utils/AuthInterceptor";
+import { authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete } from "./AuthInterceptor";
 
 export const getProducts = async (page = 0, size = 10) => {
     const response = await authenticatedGet(`${API_BASE_URL}/api/product?page=${page}&size=${size}`);

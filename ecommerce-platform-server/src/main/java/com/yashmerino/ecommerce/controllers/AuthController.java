@@ -166,16 +166,20 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String newAccessToken = authService.refreshAccessToken(refreshToken);
+        try {
+            String newAccessToken = authService.refreshAccessToken(refreshToken);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        httpResponse.addCookie(refreshTokenCookie);
-        
-        return new ResponseEntity<>(new AuthResponseDTO(newAccessToken, refreshToken), HttpStatus.OK);
+            Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(false);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+            httpResponse.addCookie(refreshTokenCookie);
+            
+            return new ResponseEntity<>(new AuthResponseDTO(newAccessToken, refreshToken), HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     /**

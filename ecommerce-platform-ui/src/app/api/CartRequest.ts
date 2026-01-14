@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
-import { authenticatedDelete } from "../utils/AuthInterceptor";
+import { authenticatedDelete } from "./AuthInterceptor";
 
 export const clearCart = async (): Promise<any> => {
     const response = await authenticatedDelete(`${API_BASE_URL}/api/cart/clear`);

@@ -23,7 +23,7 @@
  */
 
 import { API_BASE_URL } from "../../env-config";
-import { authenticatedGet, authenticatedPost, authenticatedPut } from "../utils/AuthInterceptor";
+import { authenticatedGet, authenticatedPost, authenticatedPut } from "./AuthInterceptor";
 
 /**
  * API Request to get user's information.

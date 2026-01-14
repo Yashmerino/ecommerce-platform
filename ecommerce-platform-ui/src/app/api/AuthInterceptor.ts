@@ -24,7 +24,7 @@
 
 import { store } from "../../store/store";
 import { updateJwt, updateRefreshToken, clearTokens } from "../slices/jwtSlice";
-import { refreshAccessToken } from "../api/AuthRequest";
+import { refreshAccessToken } from "./AuthRequest";
 
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?: any) => void }> = [];

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
-import { authenticatedGet } from "../utils/AuthInterceptor";
+import { authenticatedGet } from "./AuthInterceptor";
 
 export const getCategories = async () => {
     const response = await authenticatedGet(`${API_BASE_URL}/api/categories`);
