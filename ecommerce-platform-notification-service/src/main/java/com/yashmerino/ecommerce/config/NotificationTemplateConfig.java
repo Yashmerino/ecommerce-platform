@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class NotificationTemplateConfig {
 
     /**
-     * Implementation of notificaiton templates beans.
+     * Implementation of notification templates bean.
      *
      * @param templates the existing templates.
      *

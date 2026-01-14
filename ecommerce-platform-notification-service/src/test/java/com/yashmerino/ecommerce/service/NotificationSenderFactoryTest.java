@@ -32,7 +32,7 @@ class NotificationSenderFactoryTest {
         NotificationSender sender = factory.getSender("email");
 
         assertNotNull(sender);
-        assertTrue(sender instanceof EmailNotificationSender);
+        assertInstanceOf(EmailNotificationSender.class, sender);
     }
 
     @Test
@@ -40,7 +40,7 @@ class NotificationSenderFactoryTest {
         NotificationSender sender = factory.getSender("EMAIL");
 
         assertNotNull(sender);
-        assertTrue(sender instanceof EmailNotificationSender);
+        assertInstanceOf(EmailNotificationSender.class, sender);
     }
 
     @Test
@@ -48,7 +48,7 @@ class NotificationSenderFactoryTest {
         NotificationSender sender = factory.getSender("EmAiL");
 
         assertNotNull(sender);
-        assertTrue(sender instanceof EmailNotificationSender);
+        assertInstanceOf(EmailNotificationSender.class, sender);
     }
 
     @Test

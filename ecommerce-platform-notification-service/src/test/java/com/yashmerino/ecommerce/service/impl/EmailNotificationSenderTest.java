@@ -62,7 +62,7 @@ class EmailNotificationSenderTest {
     }
 
     @Test
-    void testSendWithHtmlContent() throws Exception {
+    void testSendWithHtmlContent() {
         String contact = "user@example.com";
         NotificationContent content = new NotificationContent(
                 "HTML Subject",
@@ -95,7 +95,7 @@ class EmailNotificationSenderTest {
     }
 
     @Test
-    void testSendWithEmptyContent() throws Exception {
+    void testSendWithEmptyContent() {
         String contact = "user@example.com";
         NotificationContent content = new NotificationContent("", "");
 
