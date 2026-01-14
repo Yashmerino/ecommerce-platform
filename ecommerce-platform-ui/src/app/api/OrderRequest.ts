@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
+import { authenticatedPost, authenticatedGet } from "../utils/AuthInterceptor";
 
 export interface CreateOrderRequest {
   totalAmount: number;
@@ -54,28 +55,8 @@ export interface PaginatedOrderResponse {
     hasPrevious: boolean;
 }
 
-/**
- * API Request to create a new order.
- * @param token The JWT Token
- * @param orderData The order data to create
- * @returns Order response with ID
- */
-export const createOrder = async (token: string, orderData: CreateOrderRequest): Promise<OrderResponse | any> => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/order`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(orderData),
-        }
-    );
-
-    if (response.status === 401) {
-        return response;
-    }
+export const createOrder = async (orderData: CreateOrderRequest): Promise<OrderResponse | any> => {
+    const response = await authenticatedPost(`${API_BASE_URL}/api/order`, orderData);
 
     if (!response.ok) {
         return response;
@@ -84,20 +65,8 @@ export const createOrder = async (token: string, orderData: CreateOrderRequest):
     return response.json();
 };
 
-/**
- * Returns user's orders with payment information.
- * @param token The JWT Token
- * @param page Page number (default 0)
- * @param size Page size (default 10)
- */
-export const getUserOrders = async (token: string, page: number = 0, size: number = 10): Promise<PaginatedOrderResponse | Response> => {
-    const response = await fetch(`${API_BASE_URL}/api/order/my-orders?page=${page}&size=${size}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        }
-    });
+export const getUserOrders = async (page: number = 0, size: number = 10): Promise<PaginatedOrderResponse | Response> => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/order/my-orders?page=${page}&size=${size}`);
 
     if (!response.ok) {
         return response;

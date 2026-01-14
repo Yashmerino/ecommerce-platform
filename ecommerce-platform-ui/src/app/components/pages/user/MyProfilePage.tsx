@@ -64,7 +64,7 @@ const MyProfilePage = () => {
 
     const handleSavePhoto = async () => {
         if (file != null) {
-            const response = await setUserPhoto(jwt, username, file);
+            const response = await setUserPhoto(username, file);
 
             if (response.status) {
                 if (response.status == 401) {
@@ -82,7 +82,7 @@ const MyProfilePage = () => {
         setSuccess(false);
         setInputErrors([]);
 
-        const response = await updateUser(jwt, username, email);
+        const response = await updateUser(username, email);
 
         if (response.status) {
             if (response.status == 401) {

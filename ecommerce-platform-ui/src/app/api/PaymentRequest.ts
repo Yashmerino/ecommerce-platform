@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
+import { authenticatedPost } from "../utils/AuthInterceptor";
 
 export interface PaymentRequest {
   orderId: number;
@@ -29,29 +30,8 @@ export interface PaymentRequest {
   stripeToken: string;
 }
 
-/**
- * API Request to process payment via Stripe.
- * @param token The JWT Token
- * @param orderId The order ID
- * @param paymentData The payment data including Stripe token
- * @returns Payment response
- */
-export const processPayment = async (token: string, orderId: number, paymentData: PaymentRequest): Promise<any> => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/payment/${orderId}`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(paymentData),
-        }
-    );
-
-    if (response.status === 401) {
-        return response;
-    }
+export const processPayment = async (orderId: number, paymentData: PaymentRequest): Promise<any> => {
+    const response = await authenticatedPost(`${API_BASE_URL}/api/payment/${orderId}`, paymentData);
 
     if (!response.ok) {
         return response;

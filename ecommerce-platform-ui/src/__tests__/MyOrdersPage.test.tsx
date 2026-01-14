@@ -12,7 +12,7 @@ import "../app/utils/mockJsdom";
 
 describe("My Orders Page Tests", () => {
     const initialState = { 
-        jwt: { token: "jwtkey" }, 
+        jwt: { token: "jwtkey", refreshToken: "refresh123" }, 
         username: { sub: "user" }, 
         info: { info: { roles: [{ id: 1, name: "USER" }], email: "test@test.com" }}, 
         lang: { lang: "ENG" }, 

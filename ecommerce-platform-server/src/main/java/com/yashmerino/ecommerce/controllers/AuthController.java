@@ -27,6 +27,7 @@ package com.yashmerino.ecommerce.controllers;
 import com.yashmerino.ecommerce.model.dto.SuccessDTO;
 import com.yashmerino.ecommerce.model.dto.auth.AuthResponseDTO;
 import com.yashmerino.ecommerce.model.dto.auth.LoginDTO;
+import com.yashmerino.ecommerce.model.dto.auth.RefreshTokenDTO;
 import com.yashmerino.ecommerce.model.dto.auth.RegisterDTO;
 import com.yashmerino.ecommerce.services.interfaces.AuthService;
 import com.yashmerino.ecommerce.swagger.SwaggerConfig;
@@ -41,10 +42,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -117,9 +122,93 @@ public class AuthController {
             @ApiResponse(responseCode = SwaggerHttpStatus.INTERNAL_SERVER_ERROR, description = SwaggerMessages.INTERNAL_SERVER_ERROR,
                     content = @Content)})
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@Parameter(description = "JSON Object for user's credentials.") @Valid @RequestBody LoginDTO loginDTO) {
-        String token = authService.login(loginDTO);
+    public ResponseEntity<AuthResponseDTO> login(@Parameter(description = "JSON Object for user's credentials.") @Valid @RequestBody LoginDTO loginDTO, HttpServletResponse httpResponse) {
+        AuthResponseDTO response = authService.login(loginDTO);
 
-        return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
+        Cookie refreshTokenCookie = new Cookie("refreshToken", response.getRefreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        httpResponse.addCookie(refreshTokenCookie);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * Refresh access token.
+     *
+     * @return <code>ResponseEntity</code> with new access token.
+     */
+    @Operation(summary = "Refreshes the access token using a refresh token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = SwaggerHttpStatus.OK, description = SwaggerMessages.TOKEN_REFRESHED,
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = AuthResponseDTO.class))}),
+            @ApiResponse(responseCode = SwaggerHttpStatus.UNAUTHORIZED, description = SwaggerMessages.INVALID_REFRESH_TOKEN,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.INTERNAL_SERVER_ERROR, description = SwaggerMessages.INTERNAL_SERVER_ERROR,
+                    content = @Content)})
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponseDTO> refreshToken(HttpServletRequest request, HttpServletResponse httpResponse) {
+        String refreshToken = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (refreshToken == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String newAccessToken = authService.refreshAccessToken(refreshToken);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        httpResponse.addCookie(refreshTokenCookie);
+        
+        return new ResponseEntity<>(new AuthResponseDTO(newAccessToken, refreshToken), HttpStatus.OK);
+    }
+
+    /**
+     * Logout user.
+     *
+     * @param authentication is the authentication object.
+     * @return <code>ResponseEntity</code>
+     */
+    @Operation(summary = "Logs out the user and invalidates their refresh tokens.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = SwaggerHttpStatus.OK, description = SwaggerMessages.LOGOUT_SUCCESSFUL,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.UNAUTHORIZED, description = SwaggerMessages.UNAUTHORIZED,
+                    content = @Content),
+            @ApiResponse(responseCode = SwaggerHttpStatus.INTERNAL_SERVER_ERROR, description = SwaggerMessages.INTERNAL_SERVER_ERROR,
+                    content = @Content)})
+    @PostMapping("/logout")
+    public ResponseEntity<SuccessDTO> logout(Authentication authentication, HttpServletResponse httpResponse) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            authService.logout(authentication.getName());
+        }
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+        httpResponse.addCookie(refreshTokenCookie);
+
+        SuccessDTO successDTO = new SuccessDTO();
+        successDTO.setStatus(200);
+        successDTO.setMessage("logout_successful");
+
+        return new ResponseEntity<>(successDTO, HttpStatus.OK);
     }
 }

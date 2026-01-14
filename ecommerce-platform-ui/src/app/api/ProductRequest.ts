@@ -23,23 +23,10 @@
  */
 import { API_BASE_URL } from "../../env-config";
 import { Category } from "../components/pages/products/AddProductPage";
+import { authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete } from "../utils/AuthInterceptor";
 
-/**
- * API Request to get all the products.
- * @param token The JWT Token.
- * @returns Response.
- */
-export const getProducts = async (token: string, page = 0, size = 10) => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/product?page=${page}&size=${size}`,
-        {
-            headers: { Authorization: `Bearer ${token}` },
-        }
-    );
-
-    if (response.status === 401) {
-        return response;
-    }
+export const getProducts = async (page = 0, size = 10) => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/product?page=${page}&size=${size}`);
 
     if (!response.ok) {
         return response;
@@ -48,53 +35,19 @@ export const getProducts = async (token: string, page = 0, size = 10) => {
     return response.json();
 };
 
-/**
- * API Request to get a certain product.
- * @param token The JWT Token.
- * @param id The product's ID.
- * @returns Response.
- */
-export const getProduct = async (token: string, id: number) => {
-    const response = await fetch(`${API_BASE_URL}/api/product/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-    })
-
-    if (response.status == 401) {
-        return response;
-    }
+export const getProduct = async (id: number) => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/product/${id}`);
 
     return response.json();
 }
 
-/**
- * API Request to add product to the cart.
- * @param token The JWT Token.
- * @param id The product's ID.
- * @param quantity The product's quantity.
- * @returns Response.
- */
-export const addProductToCart = async (token: string, id: number, quantity: number) => {
-    const response = await fetch(`${API_BASE_URL}/api/product/${id}/add?quantity=${quantity}`, {
-        headers: { Authorization: `Bearer ${token}` },
-    })
-
-    if (response.status == 401) {
-        return response;
-    }
+export const addProductToCart = async (id: number, quantity: number) => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/product/${id}/add?quantity=${quantity}`);
 
     return response.json();
 }
 
-/**
- * API Request to add a new product.
- * @param token The JWT Token.
- * @param name The product's name.
- * @param categories The product's categories.
- * @param price The product's price.
- * @param description The product's description.
- * @returns Response.
- */
-export const addProduct = async (token: string, name: string, categories: Category[], price: number, description: string) => {
+export const addProduct = async (name: string, categories: Category[], price: number, description: string) => {
     const productDTO = {
         name,
         price,
@@ -102,42 +55,13 @@ export const addProduct = async (token: string, name: string, categories: Catego
         description
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/product`, {
-        method: 'POST',
-        body: JSON.stringify(productDTO),
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': "application/json"
-        },
-    })
-
-    if (response.status == 401) {
-        return response;
-    }
+    const response = await authenticatedPost(`${API_BASE_URL}/api/product`, productDTO);
 
     return response.json();
 }
 
-/**
- * API Request to get seller's products.
- * @param token The JWT Token.
- * @param username The seller's username.
- * @returns Response.
- */
-export const getSellerProducts = async (token: string, username: string, page = 0, size = 5) => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/product/seller/${username}?page=${page}&size=${size}`,
-        {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        }
-    );
-
-    if (response.status === 401) {
-        return response;
-    }
+export const getSellerProducts = async (username: string, page = 0, size = 5) => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/product/seller/${username}?page=${page}&size=${size}`);
 
     if (!response.ok) {
         return response;
@@ -147,23 +71,8 @@ export const getSellerProducts = async (token: string, username: string, page = 
 };
 
 
-/**
- * API Request to delete a product.
- * @param token The JWT Token.
- * @param id The product's id.
- * @returns Response.
- */
-export const deleteProduct = async (token: string, id: number) => {
-    const response = await fetch(`${API_BASE_URL}/api/product/${id}`, {
-        method: 'DELETE',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-
-    if (response.status == 401) {
-        return response;
-    }
+export const deleteProduct = async (id: number) => {
+    const response = await authenticatedDelete(`${API_BASE_URL}/api/product/${id}`);
 
     return response.json();
 }
@@ -179,41 +88,16 @@ export const getProductPhoto = async (id: number) => {
     return response.blob();
 }
 
-/**
- * API Request to set product's photo.
- * @param token The JWT Token.
- * @param id The product's ID.
- * @param photo The product's new photo.
- * @returns Response.
- */
-export const setProductPhoto = async (token: string, id: number, photo: File | null) => {
+export const setProductPhoto = async (id: number, photo: File | null) => {
     const formData = new FormData();
     formData.append("photo", photo ?? "");
 
-    const response = await fetch(`${API_BASE_URL}/api/product/${id}/photo`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData
-    })
-
-    if (response.status == 401) {
-        return response;
-    }
+    const response = await authenticatedPost(`${API_BASE_URL}/api/product/${id}/photo`, formData);
 
     return response.json();
 }
 
-/**
- * API Request to update product.
- * @param token The JWT Token.
- * @param id The product's ID.
- * @param name The product's name.
- * @param categories The product's categories.
- * @param price The product's price.
- * @param description The product's description.
- * @returns Response.
- */
-export const updateProduct = async (token: string, id: number, name: string, categories: Category[], price: number, description: string) => {
+export const updateProduct = async (id: number, name: string, categories: Category[], price: number, description: string) => {
     const productDTO = {
         name,
         price,
@@ -221,41 +105,13 @@ export const updateProduct = async (token: string, id: number, name: string, cat
         description
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/product/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(productDTO),
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': "application/json"
-        },
-    })
-
-    if (response.status == 401) {
-        return response;
-    }
+    const response = await authenticatedPut(`${API_BASE_URL}/api/product/${id}`, productDTO);
 
     return response.json();
 }
 
-/**
- * API Request to search for products.
- * @param token The JWT Token.
- * @param query The search query.
- * @param page The page number.
- * @param size The page size.
- * @returns Response with paginated products.
- */
-export const searchProducts = async (token: string, query: string, page = 0, size = 10) => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/product/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`,
-        {
-            headers: { Authorization: `Bearer ${token}` },
-        }
-    );
-
-    if (response.status === 401) {
-        return response;
-    }
+export const searchProducts = async (query: string, page = 0, size = 10) => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/product/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`);
 
     if (!response.ok) {
         return response;

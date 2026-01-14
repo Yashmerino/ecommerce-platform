@@ -12,7 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { getUserPhoto } from '../api/UserRequest';
-import { updateJwt } from '../slices/jwtSlice';
+import { clearTokens } from '../slices/jwtSlice';
 import { Select, InputLabel, SelectChangeEvent, Button, Divider } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import HomeIcon from '@mui/icons-material/Home';
@@ -21,6 +21,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AddIcon from '@mui/icons-material/Add';
 import SellIcon from '@mui/icons-material/Sell';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import * as AuthRequest from '../api/AuthRequest';
 
 import { useNavigate } from 'react-router-dom';
 import Lang from '../../i18n/LangEnum';
@@ -36,6 +37,7 @@ const Header = () => {
     const lang = useAppSelector(state => state.lang.lang);
     const theme = useAppSelector(state => state.theme.theme);
     const username = useAppSelector(state => state.username.sub);
+    const jwt = useAppSelector(state => state.jwt.token);
     const dispatch = useAppDispatch();
 
     const [photo, setPhoto] = React.useState("");
@@ -47,12 +49,6 @@ const Header = () => {
     React.useEffect(() => {
         const getUserPhotoRequest = async () => {
             const photoBlob = await getUserPhoto(username);
-
-            if ((photoBlob as Response).status) {
-                if ((photoBlob as Response).status == 401) {
-                    navigate("/login");
-                }
-            }
 
             setPhoto(URL.createObjectURL(photoBlob as Blob));
         }
@@ -104,9 +100,17 @@ const Header = () => {
         navigate("/orders");
     }
 
-    const handleLogout = () => {
-        dispatch(updateJwt(""));
-        navigate("/login");
+    const handleLogout = async () => {
+        try {
+            // Call logout API to invalidate refresh token on server
+            await AuthRequest.logout(jwt);
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            // Clear tokens from Redux store (which persists to localStorage)
+            dispatch(clearTokens());
+            navigate("/login");
+        }
     }
 
     const handleLanguageSelection = (e: SelectChangeEvent<string>) => {

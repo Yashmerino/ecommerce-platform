@@ -1,4 +1,4 @@
-package com.yashmerino.ecommerce.security;
+package com.yashmerino.ecommerce.services.interfaces;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + MIT License
@@ -24,35 +24,42 @@ package com.yashmerino.ecommerce.security;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import com.yashmerino.ecommerce.model.RefreshToken;
+import com.yashmerino.ecommerce.model.User;
+
 /**
- * Constant values for security configuration.
+ * Interface for refresh token service.
  */
-public class SecurityConstants {
+public interface RefreshTokenService {
 
     /**
-     * Time after which JWT token expires (15 minutes).
+     * Creates a new refresh token for the user.
+     *
+     * @param user the user.
+     * @return RefreshToken entity.
      */
-    public static final long JWT_EXPIRATION = 900000;
+    RefreshToken createRefreshToken(User user);
 
     /**
-     * Time after which refresh token expires (7 days).
+     * Validates a refresh token.
+     *
+     * @param token the refresh token string.
+     * @return RefreshToken if valid.
+     * @throws RuntimeException if token is invalid, expired or revoked.
      */
-    public static final long REFRESH_TOKEN_EXPIRATION = 604800000;
+    RefreshToken verifyRefreshToken(String token);
 
     /**
-     * Bearer part from the auth header.
+     * Revokes all refresh tokens for a user.
+     *
+     * @param username the username.
      */
-    public static final String JWT_HEADER = "Bearer ";
+    void revokeUserTokens(String username);
 
     /**
-     * Auth header.
+     * Deletes a specific refresh token.
+     *
+     * @param token the refresh token string.
      */
-    public static final String AUTH_HEADER = "Authorization";
-
-    /**
-     * Private constructor to not allow instantiation.
-     */
-    private SecurityConstants() {
-
-    }
+    void deleteRefreshToken(String token);
 }

@@ -84,16 +84,8 @@ const EditProductPage = () => {
     };
 
     React.useEffect(() => {
-        const token = jwt.token;
-
         const fetchCategories = async () => {
-            const categoriesRequest = await getCategories(token);
-
-            if (categoriesRequest.status) {
-                if (categoriesRequest.status == 401) {
-                    navigate("/login");
-                }
-            }
+            const categoriesRequest = await getCategories();
 
             setFetchedCategories(categoriesRequest);
         }
@@ -132,7 +124,7 @@ const EditProductPage = () => {
             )
         })
 
-        const response = await updateProduct(jwt.token, location.state ? location.state.id : 1, name, categoriesDTO, price, description);
+        const response = await updateProduct(location.state ? location.state.id : 1, name, categoriesDTO, price, description);
 
         if (response.error) {
             setError(response.error);
@@ -140,7 +132,7 @@ const EditProductPage = () => {
             setInputErrors(response.fieldErrors);
         } else {
             if (file != null) {
-                await setProductPhoto(jwt.token, location.state ? location.state.id : 1, file);
+                await setProductPhoto(location.state ? location.state.id : 1, file);
             }
 
             setSuccess(true);

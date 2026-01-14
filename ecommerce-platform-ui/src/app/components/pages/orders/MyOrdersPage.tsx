@@ -33,9 +33,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const MyOrdersPage = () => {
-    const jwt = useAppSelector(state => state.jwt.token);
     const lang = useAppSelector(state => state.lang.lang);
-    const navigate = useNavigate();
 
     const [orders, setOrders] = React.useState<OrderWithPayment[]>([]);
     const [page, setPage] = React.useState(0);
@@ -102,12 +100,7 @@ const MyOrdersPage = () => {
     }, [page]);
 
     const fetchOrders = async () => {
-        const response = await getUserOrders(jwt, page, pageSize);
-
-        if ('status' in response && response.status === 401) {
-            navigate('/login');
-            return;
-        }
+        const response = await getUserOrders(page, pageSize);
 
         if ('data' in response) {
             setOrders(response.data);
@@ -115,7 +108,7 @@ const MyOrdersPage = () => {
         }
     };
 
-    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
         setPage(value - 1);
     };
 
@@ -165,17 +158,11 @@ const MyOrdersPage = () => {
                 return;
             }
 
-            const response = await processPayment(jwt, selectedOrder.orderId, {
+            const response = await processPayment(selectedOrder.orderId, {
                 orderId: selectedOrder.orderId,
                 amount: selectedOrder.totalAmount,
                 stripeToken: paymentMethod.id
             });
-
-            if ('status' in response && response.status === 401) {
-                navigate('/login');
-                setIsProcessing(false);
-                return;
-            }
 
             if (response instanceof Response && !response.ok) {
                 setRetryError('Payment retry failed. Please try again.');

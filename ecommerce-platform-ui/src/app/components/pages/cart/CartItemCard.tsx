@@ -52,7 +52,6 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const lang = useAppSelector(state => state.lang.lang);
-  const jwt = useAppSelector(state => state.jwt);
   const { showSnackbar } = useSnackbar();
 
   const handleDeleteClick = () => {
@@ -61,7 +60,7 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
 
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
-    const response = await deleteCartItem(jwt.token, id);
+    const response = await deleteCartItem(id);
 
     if (response.status) {
       if (response.status == 401) {
@@ -81,7 +80,7 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
 
   const handleSaveProduct = async () => {
     const updatedQuantity = (document.getElementById(`quantity-input-${id}`) as HTMLInputElement).value;
-    const response = await changeQuantity(jwt.token, id, parseInt(updatedQuantity));
+    const response = await changeQuantity(id, parseInt(updatedQuantity));
 
     if (response.status) {
       if (response.status == 401) {

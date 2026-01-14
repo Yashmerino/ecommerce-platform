@@ -27,8 +27,10 @@ import com.yashmerino.ecommerce.exceptions.UserDoesntExistException;
 import com.yashmerino.ecommerce.exceptions.UsernameAlreadyTakenException;
 import com.yashmerino.ecommerce.kafka.NotificationEventProducer;
 import com.yashmerino.ecommerce.model.Cart;
+import com.yashmerino.ecommerce.model.RefreshToken;
 import com.yashmerino.ecommerce.model.Role;
 import com.yashmerino.ecommerce.model.User;
+import com.yashmerino.ecommerce.model.dto.auth.AuthResponseDTO;
 import com.yashmerino.ecommerce.model.dto.auth.LoginDTO;
 import com.yashmerino.ecommerce.model.dto.auth.RegisterDTO;
 import com.yashmerino.ecommerce.repositories.RoleRepository;
@@ -36,14 +38,20 @@ import com.yashmerino.ecommerce.repositories.UserRepository;
 import com.yashmerino.ecommerce.security.JwtProvider;
 import com.yashmerino.ecommerce.services.interfaces.AuthService;
 import com.yashmerino.ecommerce.services.interfaces.CartService;
+import com.yashmerino.ecommerce.services.interfaces.RefreshTokenService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import java.util.HashSet;
 import java.util.List;
@@ -85,6 +93,11 @@ public class AuthServiceImpl implements AuthService {
      * Cart service.
      */
     private final CartService cartService;
+
+    /**
+     * Refresh token service.
+     */
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * Kafka Notification producer.
@@ -131,17 +144,55 @@ public class AuthServiceImpl implements AuthService {
      * Logins the user.
      *
      * @param loginDTO is the login DTO.
-     * @return JWT Token.
+     * @return AuthResponseDTO with access and refresh tokens.
      */
     @Override
-    public String login(LoginDTO loginDTO) {
+    public AuthResponseDTO login(LoginDTO loginDTO) {
         if (!userRepository.existsByUsername(loginDTO.getUsername())) {
             throw new UserDoesntExistException("username_not_found");
         }
 
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        User user = userRepository.findByUsername(loginDTO.getUsername())
+                .orElseThrow(() -> new UserDoesntExistException("username_not_found"));
+
+        String accessToken = jwtProvider.generateToken(authentication);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+        return new AuthResponseDTO(accessToken, refreshToken.getToken());
+    }
+
+    /**
+     * Refreshes the access token using a refresh token.
+     *
+     * @param refreshToken the refresh token.
+     * @return new access token.
+     */
+    @Override
+    public String refreshAccessToken(String refreshToken) {
+        RefreshToken validatedToken = refreshTokenService.verifyRefreshToken(refreshToken);
+        User user = validatedToken.getUser();
+        
+        Collection<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
+        
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getUsername(), null, authorities);
+        
         return jwtProvider.generateToken(authentication);
+    }
+
+    /**
+     * Logs out the user by revoking their refresh tokens.
+     *
+     * @param username the username.
+     */
+    @Override
+    public void logout(String username) {
+        refreshTokenService.revokeUserTokens(username);
     }
 }

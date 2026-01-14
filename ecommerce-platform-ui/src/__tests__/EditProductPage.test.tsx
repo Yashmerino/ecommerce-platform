@@ -12,7 +12,7 @@ import { Store } from "redux";
 import "../app/utils/mockJsdom";
 
 describe("Update Product Page Tests", () => {
-    const initialState = { jwt: { token: "jwtkey" }, username: { sub: "seller" }, info: { info: { roles: [{ id: 2, name: "SELLER" }], email: null } }, lang: { lang: "ENG" }, theme: { theme: "false" } };
+    const initialState = { jwt: { token: "jwtkey", refreshToken: "refresh123" }, username: { sub: "seller" }, info: { info: { roles: [{ id: 2, name: "SELLER" }], email: null } }, lang: { lang: "ENG" }, theme: { theme: "false" } };
     const mockStore = configureStore()
 
     let store: Store;

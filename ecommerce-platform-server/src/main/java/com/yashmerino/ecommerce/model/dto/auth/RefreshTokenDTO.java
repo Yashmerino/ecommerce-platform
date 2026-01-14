@@ -1,4 +1,4 @@
-package com.yashmerino.ecommerce.security;
+package com.yashmerino.ecommerce.model.dto.auth;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + MIT License
@@ -24,35 +24,20 @@ package com.yashmerino.ecommerce.security;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
 /**
- * Constant values for security configuration.
+ * Refresh Token DTO.
  */
-public class SecurityConstants {
+@Data
+public class RefreshTokenDTO {
 
     /**
-     * Time after which JWT token expires (15 minutes).
+     * Refresh token.
      */
-    public static final long JWT_EXPIRATION = 900000;
-
-    /**
-     * Time after which refresh token expires (7 days).
-     */
-    public static final long REFRESH_TOKEN_EXPIRATION = 604800000;
-
-    /**
-     * Bearer part from the auth header.
-     */
-    public static final String JWT_HEADER = "Bearer ";
-
-    /**
-     * Auth header.
-     */
-    public static final String AUTH_HEADER = "Authorization";
-
-    /**
-     * Private constructor to not allow instantiation.
-     */
-    private SecurityConstants() {
-
-    }
+    @NotNull(message = "refresh_token_is_required")
+    @NotBlank(message = "refresh_token_is_required")
+    private String refreshToken;
 }

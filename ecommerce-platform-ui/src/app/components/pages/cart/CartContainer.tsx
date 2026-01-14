@@ -200,15 +200,10 @@ const CartContainer = () => {
       }
 
       // Step 2: Create Order
-      const orderResponse = await createOrder(jwt.token, {
+      const orderResponse = await createOrder({
         totalAmount: total,
         status: 'CREATED'
       });
-
-      if ('status' in orderResponse && orderResponse.status === 401) {
-        navigate("/login");
-        return;
-      }
 
       if (!orderResponse.id) {
         setError(getTranslation(lang, "order_creation_failed") || "Failed to create order");
@@ -219,16 +214,11 @@ const CartContainer = () => {
       const orderId = orderResponse.id;
 
       // Step 3: Process Payment with real Stripe Payment Method ID
-      const paymentResponse = await processPayment(jwt.token, orderId, {
+      const paymentResponse = await processPayment(orderId, {
         orderId: orderId,
         amount: total,
         stripeToken: stripePaymentMethodId,
       });
-
-      if (paymentResponse.status === 401) {
-        navigate("/login");
-        return;
-      }
 
       if (paymentResponse.status !== 200) {
         setError(getTranslation(lang, "payment_failed") || "Payment processing failed");
@@ -237,11 +227,7 @@ const CartContainer = () => {
       }
 
       // Step 4: Clear Cart after successful payment
-      const clearCartResponse = await clearCart(jwt.token);
-      if (clearCartResponse.status === 401) {
-        navigate("/login");
-        return;
-      }
+      await clearCart();
 
       setSuccess(getTranslation(lang, "order_placed_successfully") || "Order placed successfully!");
       
@@ -271,11 +257,7 @@ const CartContainer = () => {
   };
 
   const fetchCartItems = async (page = 0) => {
-    const items = await getCartItems(jwt.token, username, page, pagination.pageSize);
-    if ('status' in items && items.status === 401) {
-      navigate("/login");
-      return;
-    }
+    const items = await getCartItems(username, page, pagination.pageSize);
     setPagination(items);
   };
 
@@ -351,7 +333,7 @@ const CartContainer = () => {
                 <Pagination
                   count={pagination.totalPages}
                   page={pagination.currentPage + 1}
-                  onChange={(e, value) => fetchCartItems(value - 1)}
+                  onChange={(_e, value) => fetchCartItems(value - 1)}
                   color="primary"
                 />
               </Box>

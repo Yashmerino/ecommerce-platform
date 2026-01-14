@@ -10,7 +10,7 @@ import "../app/utils/mockJsdom";
 import MyProductCard from "../app/components/pages/products/MyProductCard";
 
 describe("My Product Card Tests", () => {
-    const initialState = { jwt: { token: "jwtkey" }, username: { sub: "user" }, roles: { roles: { roles: [{ id: 1, name: "USER" }] } }, lang: { lang: "ENG" } };
+    const initialState = { jwt: { token: "jwtkey", refreshToken: "refresh123" }, username: { sub: "user" }, roles: { roles: { roles: [{ id: 1, name: "USER" }] } }, lang: { lang: "ENG" } };
     const mockStore = configureStore();
     let store: Store;
 

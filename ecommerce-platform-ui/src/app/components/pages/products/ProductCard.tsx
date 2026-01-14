@@ -57,7 +57,7 @@ const ProductCard = ({ id, title, price, categories, description }: ProductCardP
   const jwt = useAppSelector(state => state.jwt);
 
   const handleAddProduct = async () => {
-    const response = await addProductToCart(jwt.token, id, 1);
+    const response = await addProductToCart(id, 1);
 
     if (response.status == 200) {
       showSnackbar(getTranslation(lang, "product_added_to_cart_successfully"), "success");

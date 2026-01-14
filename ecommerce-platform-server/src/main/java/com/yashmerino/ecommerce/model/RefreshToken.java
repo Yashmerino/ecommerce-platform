@@ -1,4 +1,4 @@
-package com.yashmerino.ecommerce.security;
+package com.yashmerino.ecommerce.model;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + MIT License
@@ -24,35 +24,59 @@ package com.yashmerino.ecommerce.security;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.Instant;
+
 /**
- * Constant values for security configuration.
+ * Refresh Token model.
  */
-public class SecurityConstants {
+@Entity(name = "refresh_tokens")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class RefreshToken {
 
     /**
-     * Time after which JWT token expires (15 minutes).
+     * Refresh token's id.
      */
-    public static final long JWT_EXPIRATION = 900000;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     /**
-     * Time after which refresh token expires (7 days).
+     * The refresh token string.
      */
-    public static final long REFRESH_TOKEN_EXPIRATION = 604800000;
+    @Column(nullable = false, unique = true)
+    private String token;
 
     /**
-     * Bearer part from the auth header.
+     * User associated with this refresh token.
      */
-    public static final String JWT_HEADER = "Bearer ";
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     /**
-     * Auth header.
+     * Token expiry date.
      */
-    public static final String AUTH_HEADER = "Authorization";
+    @Column(nullable = false)
+    private Instant expiryDate;
 
     /**
-     * Private constructor to not allow instantiation.
+     * Token creation date.
      */
-    private SecurityConstants() {
+    @Column(nullable = false)
+    private Instant createdAt;
 
-    }
+    /**
+     * Whether the token has been revoked.
+     */
+    @Column(nullable = false)
+    private boolean revoked = false;
 }

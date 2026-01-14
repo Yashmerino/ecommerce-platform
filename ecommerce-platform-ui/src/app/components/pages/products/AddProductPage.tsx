@@ -70,8 +70,6 @@ export interface Category {
 const AddProductPage = () => {
     const lang = useAppSelector(state => state.lang.lang);
     const roles = useAppSelector(state => state.info.info.roles);
-    const jwt = useAppSelector(state => state.jwt);
-    const navigate = useNavigate();
 
     const [name, setName] = React.useState("");
     const [description, setDescription] = React.useState("");
@@ -90,16 +88,8 @@ const AddProductPage = () => {
     };
 
     React.useEffect(() => {
-        const token = jwt.token;
-
         const fetchCategories = async () => {
-            const categoriesRequest = await getCategories(token);
-
-            if (categoriesRequest.status) {
-                if (categoriesRequest.status == 401) {
-                    navigate("/login");
-                }
-            }
+            const categoriesRequest = await getCategories();
 
             setFetchedCategories(categoriesRequest);
         }
@@ -126,12 +116,12 @@ const AddProductPage = () => {
             )
         })
 
-        const response = await addProduct(jwt.token, name, categoriesDTO, price, description);
+        const response = await addProduct(name, categoriesDTO, price, description);
         if (response.fieldErrors) {
             setInputErrors(response.fieldErrors);
         } else {
             if (file != null) {
-                await setProductPhoto(jwt.token, response.id, file);
+                await setProductPhoto(response.id, file);
             }
 
             setSuccess(true);

@@ -46,8 +46,6 @@ const MyProductCard = ({ id, name, price, categories, description }: Product) =>
     const navigate = useNavigate();
     const lang = useAppSelector(state => state.lang.lang);
 
-    const jwt = useAppSelector(state => state.jwt);
-
     const handleAlertClick = () => {
         setIsDeleted(false);
     };
@@ -61,7 +59,7 @@ const MyProductCard = ({ id, name, price, categories, description }: Product) =>
         setIsDeleting(true);
         setIsDeleted(false);
 
-        const response = await deleteProduct(jwt.token, id);
+        const response = await deleteProduct(id);
 
         if (response.status) {
             if (response.status == 401) {

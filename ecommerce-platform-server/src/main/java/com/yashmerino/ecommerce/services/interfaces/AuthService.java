@@ -23,6 +23,7 @@ package com.yashmerino.ecommerce.services.interfaces;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import com.yashmerino.ecommerce.model.dto.auth.AuthResponseDTO;
 import com.yashmerino.ecommerce.model.dto.auth.LoginDTO;
 import com.yashmerino.ecommerce.model.dto.auth.RegisterDTO;
 
@@ -42,7 +43,22 @@ public interface AuthService {
      * Logins the user.
      *
      * @param loginDTO is the login DTO.
-     * @return JWT Token.
+     * @return AuthResponseDTO with access and refresh tokens.
      */
-    String login(final LoginDTO loginDTO);
+    AuthResponseDTO login(final LoginDTO loginDTO);
+
+    /**
+     * Refreshes the access token using a refresh token.
+     *
+     * @param refreshToken the refresh token.
+     * @return new access token.
+     */
+    String refreshAccessToken(final String refreshToken);
+
+    /**
+     * Logs out the user by revoking their refresh tokens.
+     *
+     * @param username the username.
+     */
+    void logout(final String username);
 }

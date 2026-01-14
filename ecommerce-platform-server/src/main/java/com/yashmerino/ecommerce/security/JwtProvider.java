@@ -34,6 +34,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 
 import static com.yashmerino.ecommerce.security.SecurityConstants.JWT_EXPIRATION;
@@ -108,6 +110,17 @@ public class JwtProvider {
         } catch (Exception e) {
             throw new AuthenticationCredentialsNotFoundException("JWT Token is not valid, it could be because it's expired or incorrect.");
         }
+    }
+
+    /**
+     * Generates a secure random refresh token.
+     *
+     * @return A secure random refresh token string.
+     */
+    public String generateRefreshToken() {
+        byte[] randomBytes = new byte[64];
+        new SecureRandom().nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
     /**

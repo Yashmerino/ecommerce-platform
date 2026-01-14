@@ -35,7 +35,7 @@ import * as AuthRequest from '../../../api/AuthRequest';
 import { InputError } from '../../../utils/InputErrorUtils';
 
 import { useAppDispatch, useAppSelector } from '../../../hooks';
-import { updateJwt } from '../../../slices/jwtSlice';
+import { updateJwt, updateRefreshToken } from '../../../slices/jwtSlice';
 import { updateUsername } from '../../../slices/usernameSlice';
 import { parseJwt } from '../../../utils/Utils';
 import { updateInfo } from '../../../slices/infoSlice';
@@ -65,6 +65,7 @@ const LoginPage = () => {
       setError(response.error);
     } else if (response.accessToken) {
       dispatch(updateJwt(response.accessToken));
+      dispatch(updateRefreshToken(response.refreshToken));
       dispatch(updateUsername(parseJwt(response.accessToken).sub));
       dispatch(updateInfo(await UserRequest.getUserInfo(username ?? "")));
       navigate("/products");

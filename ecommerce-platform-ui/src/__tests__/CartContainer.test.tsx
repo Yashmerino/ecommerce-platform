@@ -10,7 +10,7 @@ import { Store } from "redux";
 import "../app/utils/mockJsdom";
 
 describe("Cart Container Tests", () => {
-    const initialState = { jwt: { token: "jwtkey" }, username: { sub: "user" }, info: { info: { roles: [{ id: 1, name: "USER" }], email: null }}, lang: { lang: "ENG" }, theme: { theme: "false" } };
+    const initialState = { jwt: { token: "jwtkey", refreshToken: "refresh123" }, username: { sub: "user" }, info: { info: { roles: [{ id: 1, name: "USER" }], email: null }}, lang: { lang: "ENG" }, theme: { theme: "false" } };
     const mockStore = configureStore();
     let store: Store;
 

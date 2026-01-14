@@ -22,20 +22,10 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
+import { authenticatedGet } from "../utils/AuthInterceptor";
 
-/**
- * API Request to get all the categories.
- * @param token The JWT Token.
- * @returns Response.
- */
-export const getCategories = async (token: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/categories`, {
-        headers: { Authorization: `Bearer ${token}` },
-    })
-
-    if(response.status == 401) {
-        return response;
-    }
+export const getCategories = async () => {
+    const response = await authenticatedGet(`${API_BASE_URL}/api/categories`);
 
     return response.json();
 }

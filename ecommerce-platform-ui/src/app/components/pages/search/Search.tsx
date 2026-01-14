@@ -40,7 +40,7 @@ function Search() {
 
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const response = await searchProducts(jwt.token, query, page, 10);
+            const response = await searchProducts(query, page, 10);
 
             // searchProducts returns parsed JSON on success, Response on failure/401
             if (response && 'ok' in response) {

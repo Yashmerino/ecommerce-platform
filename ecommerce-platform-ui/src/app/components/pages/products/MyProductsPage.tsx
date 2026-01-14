@@ -42,7 +42,6 @@ import { PaginatedDTO } from '../../../../types/PaginatedDTO';
 import EMPTY_BOX from '../../../../img/empty-box.png';
 
 const ProductsContainer = () => {
-  const jwt = useAppSelector((state) => state.jwt);
   const roles = useAppSelector((state) => state.info.info.roles);
   const lang = useAppSelector((state) => state.lang.lang);
   const username = useAppSelector((state) => state.username.sub);
@@ -62,15 +61,8 @@ const ProductsContainer = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    const token = jwt.token;
-
     const fetchProducts = async () => {
-      const res = await getSellerProducts(token, username, page, pagination.pageSize);
-
-      if (res.status === 401) {
-        navigate('/login');
-        return;
-      }
+      const res = await getSellerProducts(username, page, pagination.pageSize);
 
       setPagination(res);
     };

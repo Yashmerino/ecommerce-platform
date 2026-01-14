@@ -40,6 +40,11 @@ public class AuthResponseDTO {
     private String accessToken;
 
     /**
+     * Refresh token.
+     */
+    private String refreshToken;
+
+    /**
      * Token's type.
      */
     private String tokenType = JWT_HEADER;
@@ -51,5 +56,16 @@ public class AuthResponseDTO {
      */
     public AuthResponseDTO(final String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    /**
+     * Constructor with access and refresh tokens.
+     *
+     * @param accessToken is the access token.
+     * @param refreshToken is the refresh token.
+     */
+    public AuthResponseDTO(final String accessToken, final String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }

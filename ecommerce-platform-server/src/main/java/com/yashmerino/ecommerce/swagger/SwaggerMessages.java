@@ -52,6 +52,21 @@ public class SwaggerMessages {
     public static final String USER_SIGNED_IN = "User successfully signed in.";
 
     /**
+     * Message when token is successfully refreshed.
+     */
+    public static final String TOKEN_REFRESHED = "Access token successfully refreshed.";
+
+    /**
+     * Message when refresh token is invalid.
+     */
+    public static final String INVALID_REFRESH_TOKEN = "Invalid or expired refresh token.";
+
+    /**
+     * Message when logout is successful.
+     */
+    public static final String LOGOUT_SUCCESSFUL = "User successfully logged out.";
+
+    /**
      * Message when a user does not exist.
      */
     public static final String USER_DOES_NOT_EXIST = "User doesn't exist.";

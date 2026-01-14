@@ -22,22 +22,19 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
+import { authenticatedGet, authenticatedDelete, authenticatedPost } from "../utils/AuthInterceptor";
 
 /**
  * API Request to get user's cart items.
- * @param token The JWT Token
  * @param username User's username.
+ * @param page Page number.
+ * @param size Page size.
  * @returns Response.
  */
-export const getCartItems = async (token: string, username: string, page = 0, size = 5) => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/cartItem?username=${username}&page=${page}&size=${size}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+export const getCartItems = async (username: string, page = 0, size = 5) => {
+    const response = await authenticatedGet(
+        `${API_BASE_URL}/api/cartItem?username=${username}&page=${page}&size=${size}`
     );
-
-    if (response.status === 401) {
-        return response;
-    } 
 
     if (!response.ok) {
         return response;
@@ -46,22 +43,15 @@ export const getCartItems = async (token: string, username: string, page = 0, si
     return response.json();
 };
 
-
 /**
  * API Request to delete a cart item.
- * @param token The JWT Token.
  * @param id Cart item's ID.
  * @returns Response.
  */
-export const deleteCartItem = async (token: string, id: number) => {
-    const response = await fetch(`${API_BASE_URL}/api/cartItem/${id}`, {
-        method: 'DELETE',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
+export const deleteCartItem = async (id: number) => {
+    const response = await authenticatedDelete(`${API_BASE_URL}/api/cartItem/${id}`);
 
-    if (response.status == 401) {
+    if (!response.ok) {
         return response;
     }
 
@@ -70,20 +60,17 @@ export const deleteCartItem = async (token: string, id: number) => {
 
 /**
  * API Request to change quantity of a cart item.
- * @param token The JWT Token.
  * @param id Cart item's ID.
  * @param quantity Cart item's new quantity.
  * @returns Response.
  */
-export const changeQuantity = async (token: string, id: number, quantity: number) => {
-    const response = await fetch(`${API_BASE_URL}/api/cartItem/${id}/quantity?quantity=${quantity}`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
+export const changeQuantity = async (id: number, quantity: number) => {
+    const response = await authenticatedPost(
+        `${API_BASE_URL}/api/cartItem/${id}/quantity?quantity=${quantity}`,
+        null
+    );
 
-    if (response.status == 401) {
+    if (!response.ok) {
         return response;
     }
 

@@ -22,27 +22,10 @@
  * SOFTWARE.
  */
 import { API_BASE_URL } from "../../env-config";
+import { authenticatedDelete } from "../utils/AuthInterceptor";
 
-/**
- * API Request to clear the cart.
- * @param token The JWT Token
- * @returns Response.
- */
-export const clearCart = async (token: string): Promise<any> => {
-    const response = await fetch(
-        `${API_BASE_URL}/api/cart/clear`,
-        {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    );
-
-    if (response.status === 401) {
-        return response;
-    }
+export const clearCart = async (): Promise<any> => {
+    const response = await authenticatedDelete(`${API_BASE_URL}/api/cart/clear`);
 
     if (!response.ok) {
         return response;

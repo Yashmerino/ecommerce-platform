@@ -11,7 +11,7 @@ import configureStore from 'redux-mock-store';
 import { Store } from "redux";
 
 describe("Login Page Tests", () => {
-    const initialState = { token: "", lang: { lang: "ENG" } }
+    const initialState = { token: "", refreshToken: "", lang: { lang: "ENG" } }
     const mockStore = configureStore()
     let store: Store;
 
@@ -29,6 +29,7 @@ describe("Login Page Tests", () => {
         const loginMock = jest.spyOn(AuthRequest, 'login');
         loginMock.mockReturnValue(Promise.resolve({
             "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjk0ODYzNjU3LCJleHAiOjE2OTQ4NjM3Mjd9.k87mXmLpbB__qmZRm3wqEFlg8poJcRUsnGxSoZSUQSAd8ZqRurz9WVpznilWUT9QYaS_rIdprBnAGunOTg6Rpg",
+            "refreshToken": "mGPL5QVxPMmzVBqK3mEXjdNjxnLzfMnBxD9MlPmZqR8jQKvNdmXBkR4MzPdKjV7m",
             "tokenType": "Bearer "
         }));
 

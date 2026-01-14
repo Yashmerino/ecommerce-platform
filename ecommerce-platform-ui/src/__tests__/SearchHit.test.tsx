@@ -10,7 +10,7 @@ import "../app/utils/mockJsdom";
 import SearchHit from "../app/components/pages/search/SearchHit";
 
 describe("Search Hit Card Tests", () => {
-    const initialState = { jwt: { token: "jwtkey" }, username: { sub: "user" }, roles: { roles: { roles: [{ id: 1, name: "USER" }] } }, lang: { lang: "ENG" } };
+    const initialState = { jwt: { token: "jwtkey", refreshToken: "refresh123" }, username: { sub: "user" }, roles: { roles: { roles: [{ id: 1, name: "USER" }] } }, lang: { lang: "ENG" } };
     const mockStore = configureStore();
     let store: Store;
 

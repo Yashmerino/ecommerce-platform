@@ -63,7 +63,41 @@ export const login = async (username: string, password: string) => {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         body: JSON.stringify(loginDTO),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+    })
+
+    return response.json();
+}
+
+/**
+ * API Request to refresh access token.
+ * @param refreshToken The refresh token.
+ * @returns Response.
+ */
+export const refreshAccessToken = async (refreshToken: string) => {
+    const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+    })
+
+    return response.json();
+}
+
+/**
+ * API Request to logout a user.
+ * @param token The JWT Token.
+ * @returns Response.
+ */
+export const logout = async (token: string) => {
+    const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
     })
 
     return response.json();

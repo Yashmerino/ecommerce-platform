@@ -33,14 +33,12 @@ import { getProducts } from '../../../api/ProductRequest';
 import Product from './Product';
 
 import { useAppSelector } from '../../../hooks';
-import { useNavigate } from 'react-router-dom';
 import { Box, Paper, Typography, Pagination } from '@mui/material';
 import Banner from "../../../../img/banner.jpg";
 import { getTranslation } from '../../../../i18n/i18n';
 import { PaginatedDTO } from '../../../../types/PaginatedDTO';
 
 const ProductsContainer = () => {
-  const jwt = useAppSelector(state => state.jwt);
   const lang = useAppSelector(state => state.lang.lang);
 
   const [page, setPage] = React.useState(0);
@@ -56,18 +54,9 @@ const ProductsContainer = () => {
     hasPrevious: false,
   });
 
-  const navigate = useNavigate();
-
   React.useEffect(() => {
-    const token = jwt.token;
-
     const fetchProducts = async () => {
-      const res = await getProducts(token, page, 8);
-
-      if (res.status === 401) {
-        navigate("/login");
-        return;
-      }
+      const res = await getProducts(page, 8);
 
       setPagination(res);
     };

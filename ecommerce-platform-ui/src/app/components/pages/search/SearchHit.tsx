@@ -55,7 +55,7 @@ const SearchHit = ({ id, name, price }: ISearchHit) => {
     const handleAddProduct = async () => {
         setIsSuccess(false);
 
-        const response = await addProductToCart(jwt.token, id, 1);
+        const response = await addProductToCart(id, 1);
 
         if (response.status) {
             if (response.status == 401) {

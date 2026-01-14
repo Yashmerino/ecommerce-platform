@@ -1,4 +1,4 @@
-package com.yashmerino.ecommerce.security;
+package com.yashmerino.ecommerce.repositories;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + MIT License
@@ -24,35 +24,44 @@ package com.yashmerino.ecommerce.security;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import com.yashmerino.ecommerce.model.RefreshToken;
+import com.yashmerino.ecommerce.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
 /**
- * Constant values for security configuration.
+ * Repository for {@link RefreshToken}
  */
-public class SecurityConstants {
+@Repository
+public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
     /**
-     * Time after which JWT token expires (15 minutes).
+     * Find refresh token by token string.
+     *
+     * @param token the token string.
+     * @return Optional of RefreshToken.
      */
-    public static final long JWT_EXPIRATION = 900000;
+    Optional<RefreshToken> findByToken(String token);
 
     /**
-     * Time after which refresh token expires (7 days).
+     * Delete all refresh tokens for a user.
+     *
+     * @param user the user.
      */
-    public static final long REFRESH_TOKEN_EXPIRATION = 604800000;
+    @Modifying
+    @Query("DELETE FROM refresh_tokens rt WHERE rt.user = :user")
+    void deleteByUser(User user);
 
     /**
-     * Bearer part from the auth header.
+     * Revoke all active tokens for a user.
+     *
+     * @param userId the user ID.
      */
-    public static final String JWT_HEADER = "Bearer ";
-
-    /**
-     * Auth header.
-     */
-    public static final String AUTH_HEADER = "Authorization";
-
-    /**
-     * Private constructor to not allow instantiation.
-     */
-    private SecurityConstants() {
-
-    }
+    @Modifying
+    @Query("UPDATE refresh_tokens rt SET rt.revoked = true WHERE rt.user.id = :userId AND rt.revoked = false")
+    void revokeAllUserTokens(Long userId);
 }

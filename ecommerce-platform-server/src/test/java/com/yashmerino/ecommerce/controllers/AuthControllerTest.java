@@ -198,7 +198,7 @@ class AuthControllerTest {
     }
 
     /**
-     * Tests that /login endpoint works as expected.
+     * Tests that /login endpoint works as expected and returns both access and refresh tokens.
      *
      * @throws Exception if something goes wrong.
      */
@@ -212,7 +212,9 @@ class AuthControllerTest {
         mvc.perform(post("/api/auth/login").contentType(
                 APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tokenType").value(org.hamcrest.Matchers.containsString("Bearer ")));
+                .andExpect(jsonPath("$.tokenType").value(org.hamcrest.Matchers.containsString("Bearer ")))
+                .andExpect(jsonPath("$.accessToken").exists())
+                .andExpect(jsonPath("$.refreshToken").exists());
     }
 
     /**
@@ -285,5 +287,76 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("username"))
                 .andExpect(jsonPath("$.fieldErrors[0].message").value("username_invalid_length"));
+    }
+
+    /**
+     * Tests /refresh endpoint with valid refresh token.
+     *
+     * @throws Exception if something goes wrong.
+     */
+    @Test
+    void refreshTokenSuccessfulTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
+        // Register and login to get tokens
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
+
+        MvcResult loginResult = mvc.perform(post("/api/auth/login").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String loginResponse = loginResult.getResponse().getContentAsString();
+        String refreshToken = objectMapper.readTree(loginResponse).get("refreshToken").asText();
+
+        // Test refresh endpoint
+        String refreshRequest = "{\"refreshToken\":\"" + refreshToken + "\"}";
+        mvc.perform(post("/api/auth/refresh").contentType(APPLICATION_JSON).content(refreshRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").exists())
+                .andExpect(jsonPath("$.refreshToken").value(refreshToken));
+    }
+
+    /**
+     * Tests /refresh endpoint with invalid refresh token.
+     *
+     * @throws Exception if something goes wrong.
+     */
+    @Test
+    void refreshTokenInvalidTest() throws Exception {
+        String refreshRequest = "{\"refreshToken\":\"invalid-token\"}";
+        
+        mvc.perform(post("/api/auth/refresh").contentType(APPLICATION_JSON).content(refreshRequest))
+                .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * Tests /logout endpoint.
+     *
+     * @throws Exception if something goes wrong.
+     */
+    @Test
+    void logoutSuccessfulTest() throws Exception {
+        doNothing().when(notificationEventProducer).sendWelcomeNotificationRequested(anyString());
+
+        // Register and login
+        mvc.perform(post("/api/auth/register").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(registerDTO))).andExpect(status().isOk());
+
+        MvcResult loginResult = mvc.perform(post("/api/auth/login").contentType(
+                APPLICATION_JSON).content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String loginResponse = loginResult.getResponse().getContentAsString();
+        String accessToken = objectMapper.readTree(loginResponse).get("accessToken").asText();
+
+        // Test logout
+        mvc.perform(post("/api/auth/logout")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("logout_successful"));
     }
 }

@@ -25,6 +25,7 @@ package com.yashmerino.ecommerce.security;
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import com.yashmerino.ecommerce.utils.Role;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -131,6 +132,12 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
 
     /**
+     * Allowed CORS origins from configuration.
+     */
+    @Value("${app.cors.allowed-origins:http://localhost:8080}")
+    private String allowedOrigins;
+
+    /**
      * Constructor.
      *
      * @param jwtAuthEntryPoint        is the auth entry point.
@@ -161,11 +168,15 @@ public class SecurityConfig {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                .logout()
+                .disable()
                 .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, AUTH_ALL_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, AUTH_ALL_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, USERS_ALL_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, PRODUCTS_ALL_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, CATEGORIES_ALL_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST, USERS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name(), Role.SELLER.name())
                         .requestMatchers(HttpMethod.PUT, USERS_ALL_ENDPOINTS).hasAnyAuthority(Role.USER.name(), Role.SELLER.name())
                         .requestMatchers(CART_ITEMS_ALL_ENDPOINTS).hasAnyAuthority(Role.SELLER.name(), Role.USER.name())
@@ -175,7 +186,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
                         .requestMatchers(HttpMethod.PUT, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
                         .requestMatchers(HttpMethod.DELETE, PRODUCTS_ALL_ENDPOINTS).hasAuthority(Role.SELLER.name())
-                        .requestMatchers(HttpMethod.GET, CATEGORIES_ALL_ENDPOINTS).hasAnyAuthority(Role.SELLER.name(), Role.USER.name())
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(ACTUATOR_WHITELIST).permitAll()
                         .anyRequest()
@@ -195,11 +205,12 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("*"));
+        corsConfiguration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
+        corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setExposedHeaders(Arrays.asList("X-Auth-Token", "Authorization", "Access-Control-Allow-Origin",
-                "Access-Control-Allow-Credentials"));
+                "Access-Control-Allow-Credentials", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
