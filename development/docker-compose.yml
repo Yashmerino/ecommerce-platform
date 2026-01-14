@@ -14,7 +14,7 @@ services:
 
       # ===== LISTENERS =====
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
 
@@ -24,6 +24,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - ecommerce-network
 
   mysql:
     image: mysql:8.0
@@ -34,3 +36,112 @@ services:
       MYSQL_ROOT_PASSWORD: "123"
     volumes:
       - ./mysql-init:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ecommerce-server:
+    build:
+      context: ../ecommerce-platform-server
+      dockerfile: Dockerfile.dev
+    container_name: ecommerce-server
+    ports:
+      - "8081:8081"
+    volumes:
+      - ../ecommerce-platform-server/src:/app/src
+      - ../ecommerce-platform-server/target:/app/target
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce_platform?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
+
+  payment-service:
+    build:
+      context: ../ecommerce-platform-payment-service
+      dockerfile: Dockerfile.dev
+    container_name: payment-service
+    ports:
+      - "8082:8082"
+    volumes:
+      - ../ecommerce-platform-payment-service/src:/app/src
+      - ../ecommerce-platform-payment-service/target:/app/target
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce_platform_payment_service?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
+
+  notification-service:
+    build:
+      context: ../ecommerce-platform-notification-service
+      dockerfile: Dockerfile.dev
+    container_name: notification-service
+    ports:
+      - "8083:8083"
+    volumes:
+      - ../ecommerce-platform-notification-service/src:/app/src
+      - ../ecommerce-platform-notification-service/target:/app/target
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce_platform_notification_service?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      kafka:
+        condition: service_started
+    networks:
+      - ecommerce-network
+
+  ecommerce-ui:
+    build:
+      context: ../ecommerce-platform-ui
+      dockerfile: Dockerfile.dev
+    container_name: ecommerce-ui
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../ecommerce-platform-ui/src:/app/src
+      - ../ecommerce-platform-ui/public:/app/public
+      - ../ecommerce-platform-ui/index.html:/app/index.html
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://ecommerce-server:8081
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - ecommerce-server
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  maven-cache:

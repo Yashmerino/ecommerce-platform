@@ -18,4 +18,4 @@ COPY --from=build /ecommerce-platform-ui/ /ecommerce-platform-ui/
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "8080"]
