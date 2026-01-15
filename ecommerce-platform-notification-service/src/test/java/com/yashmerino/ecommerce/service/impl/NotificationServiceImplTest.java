@@ -92,6 +92,24 @@ class NotificationServiceImplTest {
     }
 
     @Test
+    void testSendNotificationWithRetry() {
+        NotificationContent content = new NotificationContent(
+                "Payment Successful",
+                "Your payment was successful"
+        );
+
+        when(templates.get(NotificationType.PAYMENT_SUCCESS)).thenReturn(notificationTemplate);
+        when(notificationTemplate.build(payload)).thenReturn(content);
+        when(senderFactory.getSender("EMAIL")).thenReturn(notificationSender);
+        when(notificationRepository.save(any(Notification.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        notificationService.sendNotification(testEvent);
+
+        verify(notificationSender).send("test@example.com", content);
+        verify(notificationRepository, atLeast(1)).save(any(Notification.class));
+    }
+
+    @Test
     void testSendNotificationTemplateNotFound() {
         when(templates.get(NotificationType.PAYMENT_SUCCESS)).thenReturn(null);
         when(notificationRepository.save(any(Notification.class))).thenAnswer(i -> i.getArguments()[0]);
