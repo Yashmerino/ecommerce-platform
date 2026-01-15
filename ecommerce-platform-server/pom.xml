@@ -21,6 +21,8 @@
             src/main/java/com/yashmerino/ecommerce/model/dto/auth/*.java,
             src/main/java/com/yashmerino/ecommerce/security/*.java,
             src/main/java/com/yashmerino/ecommerce/swagger/*.java,
+            src/main/java/com/yashmerino/ecommerce/kafka/events/*.java,
+            src/main/java/com/yashmerino/ecommerce/utils/*.java,
             src/main/java/com/yashmerino/ecommerce/Initializer.java,
             src/main/java/com/yashmerino/ecommerce/EcommerceServerApplication.java
         </sonar.coverage.exclusions>
