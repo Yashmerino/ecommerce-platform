@@ -32,6 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -57,6 +58,6 @@ class SecurityTest {
      */
     @Test
     void anyRequestIsSecuredTest() throws Exception {
-        mvc.perform(delete("/api/auth/register")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/users/me")).andExpect(status().isUnauthorized());
     }
 }

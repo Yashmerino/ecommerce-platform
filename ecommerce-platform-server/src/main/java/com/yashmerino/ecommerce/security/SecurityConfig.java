@@ -157,7 +157,6 @@ public class SecurityConfig {
                 .logout()
                 .disable()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, AUTH_ALL_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, AUTH_ALL_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, USERS_ALL_ENDPOINTS).permitAll()
