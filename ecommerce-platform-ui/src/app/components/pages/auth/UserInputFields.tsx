@@ -101,6 +101,7 @@ const UserInputFields = ({ title, buttonText, handleSubmit, isEmailAndRoleMandat
                     <Box component="form" onSubmit={(e) => handleSubmit(e)} noValidate sx={{ width: '100%' }}>
                     {isEmailAndRoleMandatory &&
                         <>
+                            <input type="hidden" name="role" value={role} />
                             <FormControl fullWidth sx={{ mb: 2 }}>
                                 <InputLabel id="roleInput">{getTranslation(lang, "role")}</InputLabel>
                                 <Select

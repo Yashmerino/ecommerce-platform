@@ -177,30 +177,26 @@ const Header = () => {
                                 }
                             }}
                         >
-                            {roles[0].name === "USER" && (
-                                <>
-                                    <MenuItem onClick={handleMyOrders}>
-                                        <ReceiptIcon sx={{ mr: 1.5 }} />
-                                        <Typography>{getTranslation(lang, "my_orders") || "My Orders"}</Typography>
-                                    </MenuItem>
-                                    <MenuItem onClick={handleMyCart}>
-                                        <ShoppingCartIcon sx={{ mr: 1.5 }} />
-                                        <Typography>{getTranslation(lang, "my_cart")}</Typography>
-                                    </MenuItem>
-                                </>
-                            )}
-                            {roles[0].name === "SELLER" && (
-                                <>
-                                    <MenuItem onClick={handleAddProduct}>
-                                        <AddIcon sx={{ mr: 1.5 }} />
-                                        <Typography>{getTranslation(lang, "add_product")}</Typography>
-                                    </MenuItem>
-                                    <MenuItem onClick={handleMyProducts}>
-                                        <SellIcon sx={{ mr: 1.5 }} />
-                                        <Typography>{getTranslation(lang, "my_products")}</Typography>
-                                    </MenuItem>
-                                </>
-                            )}
+                            {roles[0].name === "USER" && [
+                                <MenuItem key="my-orders" onClick={handleMyOrders}>
+                                    <ReceiptIcon sx={{ mr: 1.5 }} />
+                                    <Typography>{getTranslation(lang, "my_orders") || "My Orders"}</Typography>
+                                </MenuItem>,
+                                <MenuItem key="my-cart" onClick={handleMyCart}>
+                                    <ShoppingCartIcon sx={{ mr: 1.5 }} />
+                                    <Typography>{getTranslation(lang, "my_cart")}</Typography>
+                                </MenuItem>
+                            ]}
+                            {roles[0].name === "SELLER" && [
+                                <MenuItem key="add-product" onClick={handleAddProduct}>
+                                    <AddIcon sx={{ mr: 1.5 }} />
+                                    <Typography>{getTranslation(lang, "add_product")}</Typography>
+                                </MenuItem>,
+                                <MenuItem key="my-products" onClick={handleMyProducts}>
+                                    <SellIcon sx={{ mr: 1.5 }} />
+                                    <Typography>{getTranslation(lang, "my_products")}</Typography>
+                                </MenuItem>
+                            ]}
                             {roles[0].name === "USER" && (
                                 <MenuItem onClick={handleSearch}>
                                     <SearchIcon sx={{ mr: 1.5 }} />

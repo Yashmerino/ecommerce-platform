@@ -52,8 +52,13 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
     const token = state.jwt.token;
     const refreshToken = state.jwt.refreshToken;
 
+    // Ensure headers object exists
+    if (!options.headers) {
+        options.headers = {};
+    }
+
     // Add authorization header if token exists
-    if (token && options.headers) {
+    if (token) {
         options.headers = {
             ...options.headers,
             Authorization: `Bearer ${token}`,

@@ -32,8 +32,8 @@ export default defineConfig({
     'process.env.API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL),
   },
   server: {
-    port: 3000,
-    open: true,
+    host: '0.0.0.0',
+    port: 8080,
     strictPort: false,
   },
   build: {

@@ -51,10 +51,10 @@ const RegisterPage = () => {
         const data = new FormData(event.currentTarget);
         const username = data.get('username')?.toString();
         const password = data.get('password')?.toString();
-        const role = document.getElementById("role") as HTMLInputElement;
+        const role = data.get('role')?.toString();
         const email = data.get('email')?.toString();
 
-        const response = await AuthRequest.register(role.innerHTML.toUpperCase() ?? "", email ?? "", username ?? "", password ?? "");
+        const response = await AuthRequest.register(role ?? "", email ?? "", username ?? "", password ?? "");
 
         if (response.error) {
             setError(response.error);
