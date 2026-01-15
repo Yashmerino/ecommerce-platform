@@ -44,7 +44,7 @@ class PaymentStatusTest {
         PaymentStatus status1 = PaymentStatus.SUCCEEDED;
         PaymentStatus status2 = PaymentStatus.SUCCEEDED;
 
-        assertTrue(status1 == status2);
+        assertSame(status1, status2);
         assertEquals(status1, status2);
     }
 }

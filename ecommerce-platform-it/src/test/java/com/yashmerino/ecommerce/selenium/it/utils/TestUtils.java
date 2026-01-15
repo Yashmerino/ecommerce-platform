@@ -19,7 +19,7 @@ public class TestUtils {
     /**
      * SQL Script file that cleans the database.
      */
-    public final static String SQL_CLEAN_SCRIPT_FILE = "src/test/resources/sql/clean.sql";
+    public static final String SQL_CLEAN_SCRIPT_FILE = "src/test/resources/sql/clean.sql";
 
     /**
      * The pattern used to assemble the URL for the application database.

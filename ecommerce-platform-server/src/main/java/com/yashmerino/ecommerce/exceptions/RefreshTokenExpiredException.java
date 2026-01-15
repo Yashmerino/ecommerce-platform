@@ -1,5 +1,4 @@
-package com.yashmerino.ecommerce.repositories;
-
+package com.yashmerino.ecommerce.exceptions;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + MIT License
  +
@@ -24,23 +23,15 @@ package com.yashmerino.ecommerce.repositories;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-import com.yashmerino.ecommerce.model.Order;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 /**
- * Orders' repository.
+ * Exception thrown when the user doesn't exist.
  */
-@Repository
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public class RefreshTokenExpiredException extends RuntimeException {
+
     /**
-     * Find all orders for a specific user with pagination.
-     *
-     * @param userId the user's ID
-     * @param pageable pagination information
-     * @return page of orders
+     * Constructor;
      */
-    Page<Order> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    public RefreshTokenExpiredException(final String message) {
+        super(message);
+    }
 }

@@ -4,15 +4,12 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.yashmerino.ecommerce.model.base.BaseEntity;
 import com.yashmerino.ecommerce.utils.OrderStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.UUID;
 
 /**
  * JPA Entity for order.

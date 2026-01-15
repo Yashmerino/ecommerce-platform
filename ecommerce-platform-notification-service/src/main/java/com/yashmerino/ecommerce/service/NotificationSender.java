@@ -1,9 +1,7 @@
 package com.yashmerino.ecommerce.service;
 
-import com.yashmerino.ecommerce.kafka.events.NotificationRequestedEvent;
 import com.yashmerino.ecommerce.model.NotificationContent;
 import com.yashmerino.ecommerce.utils.ContactType;
-import com.yashmerino.ecommerce.utils.NotificationType;
 
 /**
  * Interface for a notification sender.

@@ -38,7 +38,7 @@ public class PaymentFailedTemplate implements NotificationTemplate {
 
         return new NotificationContent(
             String.format("Payment with ID %s failed", paymentId),
-            String.format("Your payment of " + amount + " € for order with ID %s failed. Please retry in your orders page", orderId)
+            String.format("Your payment of %f€ for order with ID %s failed. Please retry in your orders page", amount, orderId)
         );
     }
 }

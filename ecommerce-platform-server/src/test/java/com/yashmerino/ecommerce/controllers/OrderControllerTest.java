@@ -25,7 +25,6 @@ package com.yashmerino.ecommerce.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yashmerino.ecommerce.model.dto.OrderDTO;
-import com.yashmerino.ecommerce.model.dto.ProductDTO;
 import com.yashmerino.ecommerce.utils.OrderStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,12 +35,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

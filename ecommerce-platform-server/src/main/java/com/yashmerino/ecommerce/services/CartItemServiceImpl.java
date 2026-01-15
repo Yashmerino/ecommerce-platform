@@ -51,29 +51,22 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartItemRepository cartItemRepository;
 
     /**
-     * User repository.
-     */
-    private final UserRepository userRepository;
-
-    /**
      * Access denied message translation key.
      */
-    private final static String ACCESS_DENIED_MESSAGE = "access_denied";
+    private static final String ACCESS_DENIED_MESSAGE = "access_denied";
 
     /**
      * Cart item not found message translation key.
      */
-    private final static String CART_ITEM_NOT_FOUND_MESSAGE = "cartitem_not_found";
+    private static final String CART_ITEM_NOT_FOUND_MESSAGE = "cartitem_not_found";
 
     /**
      * Constructor to inject dependencies.
      *
      * @param cartItemRepository is the cart item repository.
-     * @param userRepository     is the user repository.
      */
-    public CartItemServiceImpl(CartItemRepository cartItemRepository, UserRepository userRepository) {
+    public CartItemServiceImpl(CartItemRepository cartItemRepository) {
         this.cartItemRepository = cartItemRepository;
-        this.userRepository = userRepository;
     }
 
     /**
@@ -168,7 +161,7 @@ public class CartItemServiceImpl implements CartItemService {
         String currentUserUsername = auth.getName();
 
         if (!username.equals(currentUserUsername)) {
-            throw new AccessDeniedException("access_denied");
+            throw new AccessDeniedException(ACCESS_DENIED_MESSAGE);
         }
 
         return cartItemRepository.findAllByCartUserUsername(username, pageable);

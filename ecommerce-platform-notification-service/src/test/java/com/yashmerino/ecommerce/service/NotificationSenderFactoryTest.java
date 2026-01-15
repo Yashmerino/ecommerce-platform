@@ -3,6 +3,8 @@ package com.yashmerino.ecommerce.service;
 import com.yashmerino.ecommerce.service.impl.EmailNotificationSender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.Arrays;
@@ -27,25 +29,10 @@ class NotificationSenderFactoryTest {
         factory = new NotificationSenderFactory(senderList);
     }
 
-    @Test
-    void testGetSenderEmailTypeReturnsEmailSender() {
-        NotificationSender sender = factory.getSender("email");
-
-        assertNotNull(sender);
-        assertInstanceOf(EmailNotificationSender.class, sender);
-    }
-
-    @Test
-    void testGetSenderEmailUpperCaseReturnsEmailSender() {
-        NotificationSender sender = factory.getSender("EMAIL");
-
-        assertNotNull(sender);
-        assertInstanceOf(EmailNotificationSender.class, sender);
-    }
-
-    @Test
-    void testGetSenderEmailMixedCaseReturnsEmailSender() {
-        NotificationSender sender = factory.getSender("EmAiL");
+    @ParameterizedTest(name = "getSender(\"{0}\") should return EmailNotificationSender")
+    @ValueSource(strings = {"email", "EMAIL", "EmAiL"})
+    void testGetSenderEmailReturnsEmailSenderRegardlessOfCase(String type) {
+        NotificationSender sender = factory.getSender(type);
 
         assertNotNull(sender);
         assertInstanceOf(EmailNotificationSender.class, sender);

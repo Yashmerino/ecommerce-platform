@@ -25,7 +25,6 @@ package com.yashmerino.ecommerce.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yashmerino.ecommerce.kafka.NotificationEventProducer;
-import com.yashmerino.ecommerce.model.dto.PaymentDTO;
 import com.yashmerino.ecommerce.model.dto.auth.LoginDTO;
 import com.yashmerino.ecommerce.model.dto.auth.RegisterDTO;
 import jakarta.servlet.http.Cookie;
@@ -44,16 +43,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static com.yashmerino.ecommerce.utils.Role.USER;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import org.hamcrest.Matchers;
 
 /**
  * Tests {@link AuthController} endpoints.

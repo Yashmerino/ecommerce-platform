@@ -311,9 +311,9 @@ const CartContainer = () => {
                         data: prev.data.map(item => item.id === id ? { ...item, quantity: newQuantity } : item),
                         totalPrice: prev.data.reduce((acc, item) => {
                           if (item.id === id) {
-                            return acc + parseFloat(item.price) * newQuantity;
+                            return acc + Number.parseFloat(item.price) * newQuantity;
                           }
-                          return acc + parseFloat(item.price) * item.quantity;
+                          return acc + Number.parseFloat(item.price) * item.quantity;
                         }, 0),
                       }));
                     }}

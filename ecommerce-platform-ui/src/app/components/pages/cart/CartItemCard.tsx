@@ -80,7 +80,7 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
 
   const handleSaveProduct = async () => {
     const updatedQuantity = (document.getElementById(`quantity-input-${id}`) as HTMLInputElement).value;
-    const response = await changeQuantity(id, parseInt(updatedQuantity));
+    const response = await changeQuantity(id, Number.parseInt(updatedQuantity));
 
     if (response.status) {
       if (response.status == 401) {
@@ -89,7 +89,7 @@ const CartItemCard = ({ id, productId, title, price, quantity, onUpdate }: CartI
       }
     }
 
-    onUpdate(id, parseInt(updatedQuantity));
+    onUpdate(id, Number.parseInt(updatedQuantity));
   }
 
   React.useEffect(() => {

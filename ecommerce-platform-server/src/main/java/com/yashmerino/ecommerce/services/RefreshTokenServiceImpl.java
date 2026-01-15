@@ -24,6 +24,8 @@ package com.yashmerino.ecommerce.services;
  + SOFTWARE.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+import com.yashmerino.ecommerce.exceptions.RefreshTokenExpiredException;
+import com.yashmerino.ecommerce.exceptions.RefreshTokenRevokedException;
 import com.yashmerino.ecommerce.exceptions.UserDoesntExistException;
 import com.yashmerino.ecommerce.model.RefreshToken;
 import com.yashmerino.ecommerce.model.User;
@@ -93,12 +95,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .orElseThrow(() -> new RuntimeException("refresh_token_not_found"));
 
         if (refreshToken.isRevoked()) {
-            throw new RuntimeException("refresh_token_revoked");
+            throw new RefreshTokenRevokedException("refresh_token_revoked");
         }
 
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RuntimeException("refresh_token_expired");
+            throw new RefreshTokenExpiredException("refresh_token_expired");
         }
 
         return refreshToken;

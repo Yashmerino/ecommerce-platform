@@ -322,9 +322,7 @@ const EditProductPage = () => {
                                             onChange={handleCategoriesChange}
                                             input={<OutlinedInput />}
                                             renderValue={(selected) => (
-                                                selected.length === 0
-                                                    ? (<em>{getTranslation(lang, "categories")}</em>)
-                                                    : (<em>{getTranslation(lang, "categories")}</em>)
+                                                <em>{getTranslation(lang, "categories")}</em>
                                             )}
                                             MenuProps={MenuProps}
                                             sx={{ flex: 2, height: '100%' }}

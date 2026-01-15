@@ -15,27 +15,27 @@ public class TestProperties {
     /**
      * File that stores properties.
      */
-    private final static String PROPERTIES_FILE = "src/test/resources/it-test.properties";
+    private static final String PROPERTIES_FILE = "src/test/resources/it-test.properties";
 
     /**
      * Properties.
      */
-    private final static Properties properties = new Properties();
+    private static final Properties properties = new Properties();
 
     /**
      * Database's url property name.
      */
-    public final static String DB_URL = "db.url";
+    public static final String DB_URL = "db.url";
 
     /**
      * Database's username property name.
      */
-    public final static String DB_USERNAME = "db.username";
+    public static final String DB_USERNAME = "db.username";
 
     /**
      * Database's password property name.
      */
-    public final static String DB_PASSWORD = "db.password";
+    public static final String DB_PASSWORD = "db.password";
 
     static {
         try {

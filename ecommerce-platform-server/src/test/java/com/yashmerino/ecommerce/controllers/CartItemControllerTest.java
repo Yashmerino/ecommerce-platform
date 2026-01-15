@@ -33,7 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -205,6 +205,6 @@ class CartItemControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         String content1 = page1.getResponse().getContentAsString();
-        assertTrue(content1.equals("{\"data\":[],\"currentPage\":1,\"totalPages\":1,\"totalItems\":1,\"pageSize\":1,\"totalPrice\":5.0,\"hasNext\":false,\"hasPrevious\":true}"));
+        assertEquals("{\"data\":[],\"currentPage\":1,\"totalPages\":1,\"totalItems\":1,\"pageSize\":1,\"totalPrice\":5.0,\"hasNext\":false,\"hasPrevious\":true}", content1);
     }
 }

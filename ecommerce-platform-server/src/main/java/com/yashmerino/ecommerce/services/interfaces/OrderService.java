@@ -4,8 +4,6 @@ import com.yashmerino.ecommerce.model.dto.OrderDTO;
 import com.yashmerino.ecommerce.model.dto.OrderWithPaymentDTO;
 import com.yashmerino.ecommerce.model.dto.PaginatedDTO;
 
-import java.util.List;
-
 /**
  * Interface for order service.
  */

@@ -1,6 +1,5 @@
 package com.yashmerino.ecommerce.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.yashmerino.ecommerce.model.base.BaseEntity;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
 import jakarta.persistence.*;

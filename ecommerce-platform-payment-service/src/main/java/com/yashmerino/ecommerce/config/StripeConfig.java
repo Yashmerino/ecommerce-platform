@@ -15,10 +15,10 @@ public class StripeConfig {
      * Stripe API key.
      */
     @Value("${stripe.api.key}")
-    private String apiKey;
+    private static String apiKey;
 
     @PostConstruct
-    public void init() {
+    public static void init() {
         Stripe.apiKey = apiKey;
     }
 }

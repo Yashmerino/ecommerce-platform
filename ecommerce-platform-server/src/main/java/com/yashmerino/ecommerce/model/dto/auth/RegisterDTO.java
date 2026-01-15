@@ -46,7 +46,7 @@ public class RegisterDTO {
     /**
      * User's email.
      */
-    @Email(message = "email_is_invalid", regexp = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-z A-Z]{2,7}$")
+    @Email(message = "email_is_invalid")
     @NotNull(message = "email_is_required")
     @NotBlank(message = "email_is_required")
     // NOSONAR: The wrapper is required. Different error messages.

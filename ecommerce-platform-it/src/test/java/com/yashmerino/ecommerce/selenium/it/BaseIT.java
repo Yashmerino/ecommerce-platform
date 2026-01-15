@@ -18,7 +18,7 @@ import static com.yashmerino.ecommerce.selenium.it.utils.SeleniumProperties.CHRO
 /**
  * Base selenium integration test.
  */
-public class BaseIT {
+public class BaseIT { // NOSONAR: This class should be public for inheritance.
 
     /**
      * Register page URL.
@@ -64,7 +64,7 @@ public class BaseIT {
      * Method that is called before each test.
      */
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         TestUtils.executeSQLScript(TestUtils.SQL_CLEAN_SCRIPT_FILE);
     }
 
@@ -72,7 +72,7 @@ public class BaseIT {
      * Method that is executed after each test.
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         driver.quit();
     }
 

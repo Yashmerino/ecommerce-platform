@@ -1,7 +1,5 @@
 package com.yashmerino.ecommerce.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yashmerino.ecommerce.kafka.events.NotificationRequestedEvent;
 import com.yashmerino.ecommerce.model.Notification;
 import com.yashmerino.ecommerce.model.NotificationContent;
@@ -10,7 +8,6 @@ import com.yashmerino.ecommerce.service.NotificationSender;
 import com.yashmerino.ecommerce.service.NotificationSenderFactory;
 import com.yashmerino.ecommerce.service.NotificationTemplate;
 import com.yashmerino.ecommerce.utils.ContactType;
-import com.yashmerino.ecommerce.utils.NotificationStatus;
 import com.yashmerino.ecommerce.utils.NotificationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

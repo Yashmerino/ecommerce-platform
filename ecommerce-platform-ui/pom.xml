@@ -14,7 +14,6 @@
     <properties>
         <sonar.sources>src</sonar.sources>
         <sonar.coverage.exclusions>
-            src/reportWebVitals.ts,
             setupTests.ts,
             src/index.tsx,
             src/app/App.tsx,
