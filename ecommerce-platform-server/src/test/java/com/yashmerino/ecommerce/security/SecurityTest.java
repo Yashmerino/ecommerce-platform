@@ -31,10 +31,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 /**
  * Tests for security part of the application.
@@ -58,6 +56,6 @@ class SecurityTest {
      */
     @Test
     void anyRequestIsSecuredTest() throws Exception {
-        mvc.perform(get("/api/users/me")).andExpect(status().isUnauthorized());
+        mvc.perform(delete("/api/cartItem/1")).andExpect(status().isForbidden());
     }
 }

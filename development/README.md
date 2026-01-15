@@ -1,6 +1,6 @@
 # Development Environment
 
-Local development environment using Docker Compose with hot reload support for all microservices.
+Local development environment using Docker Compose with hot reload support for all microservices, nginx reverse proxy, and infrastructure services.
 
 ## Quick Start
 
@@ -9,16 +9,6 @@ Local development environment using Docker Compose with hot reload support for a
 ```bash
 cd development
 docker-compose up --build
-```
-
-### Start specific services only
-
-```bash
-# Infrastructure only
-docker-compose up kafka mysql
-
-# Single service with dependencies
-docker-compose up kafka mysql ecommerce-server
 ```
 
 ## Stop Services
@@ -33,14 +23,42 @@ docker-compose down -v
 
 ## Available Services
 
-| Service | Port | URL | Hot Reload |
-|---------|------|-----|------------|
-| UI | 8080 | http://localhost:8080 | Yes (Vite HMR) |
-| Server | 8081 | http://localhost:8081 | Yes (DevTools) |
-| Payment Service | 8082 | http://localhost:8082 | Yes (DevTools) |
-| Notification Service | 8083 | http://localhost:8083 | Yes (DevTools) |
-| MySQL | 3306 | jdbc:mysql://localhost:3306 | - |
-| Kafka | 9092 | localhost:9092 | - |
+### Application Services
+
+| Service | Direct Port | Nginx Path | Hot Reload |
+|---------|-------------|------------|------------|
+| **UI** | 8080 | http://localhost/ | Yes (Vite HMR) |
+| **Server** | 8081 | http://localhost/api/ | Yes (DevTools) |
+| **Payment Service** | 8082 | http://localhost/payment-api/ | Yes (DevTools) |
+| **Notification Service** | 8083 | http://localhost/notification-api/ | Yes (DevTools) |
+
+### Infrastructure Services
+
+| Service | Port | URL | Purpose |
+|---------|------|-----|---------|
+| **Nginx** | 80 | http://localhost | Reverse proxy |
+| **MySQL** | 3306 | jdbc:mysql://localhost:3306 | Database |
+| **Kafka** | 9092 | localhost:9092 | Event streaming |
+| **Redis** | 6379 | localhost:6379 | Caching & sessions |
+
+### Request Routing
+
+```
+http://localhost/                      → UI (Vite dev server)
+http://localhost/api/                  → Main Server
+http://localhost/api/auth/             → Main Server (rate limited)
+http://localhost/payment-api/          → Payment Service
+http://localhost/notification-api/     → Notification Service
+http://localhost/swagger-ui/           → Main Server Swagger
+http://localhost/health                → Nginx health check
+```
+
+### Configuration
+- Config file: `nginx/nginx.conf`
+- Worker connections: 1024
+- Client max body size: 1MB
+- Request timeout: 60s
+- Rate limit: 5 req/min for `/api/auth/` (burst: 10)
 
 ## How Hot Reload Works
 
@@ -59,6 +77,29 @@ docker-compose down -v
 ## Debugging
 
 Remote debug ports are exposed for all Java services on port 5005. Configure your IDE to attach to `localhost:5005`.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Nginx (Port 80)                      │
+│          Reverse Proxy & Rate Limiting                  │
+└────┬──────────────┬──────────────┬──────────────┬──────┘
+     │              │              │              │
+     ▼              ▼              ▼              ▼
+┌────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+│   UI   │   │  Server  │   │ Payment  │   │Notification│
+│ :8080  │   │  :8081   │   │  :8082   │   │   :8083   │
+└────────┘   └────┬─────┘   └────┬─────┘   └─────┬─────┘
+                  │              │               │
+           ┌──────┴──────┬───────┴───────┬───────┘
+           │             │               │
+           ▼             ▼               ▼
+      ┌────────┐    ┌────────┐     ┌────────┐
+      │ MySQL  │    │ Kafka  │     │ Redis  │
+      │ :3306  │    │ :9092  │     │ :6379  │
+      └────────┘    └────────┘     └────────┘
+```
 
 ## Notes
 
