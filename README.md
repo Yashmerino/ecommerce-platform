@@ -1,8 +1,8 @@
 [![Java CI with Maven](https://github.com/Yashmerino/ecommerce-platform/actions/workflows/maven.yml/badge.svg)](https://github.com/Yashmerino/ecommerce-platform/actions/workflows/maven.yml) [![Node.js CI](https://github.com/Yashmerino/ecommerce-platform/actions/workflows/node.js.yml/badge.svg)](https://github.com/Yashmerino/ecommerce-platform/actions/workflows/node.js.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Yashmerino_ecommerce-platform&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Yashmerino_ecommerce-platform)
 
 <h1 align="center"><strong><em>Ecommerce Platform</strong></em></h1>
-
-<p align="center"><img src="https://static.vecteezy.com/system/resources/previews/009/848/288/original/verified-shop-online-store-3d-illustration-for-ecommerce-icon-free-png.png" alt="sms logo" height=225 width=225></p>
+  
+[![YouTube Showcase Video of the project](demo/thumbnail.png)](https://youtu.be/JQikf8Uf4zU)
 
 Ecommerce Platform is a pet project built with a microservices architecture using Spring Boot and React. The platform includes multiple services for handling core functionality, payments, and notifications. It uses MySQL for data persistence, Kafka for event streaming, and Redis for caching. The platform features JWT-based authentication and supports 3 languages:
 * **English**
