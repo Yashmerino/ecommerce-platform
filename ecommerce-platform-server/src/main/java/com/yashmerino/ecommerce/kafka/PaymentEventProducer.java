@@ -1,7 +1,7 @@
 package com.yashmerino.ecommerce.kafka;
 
 import com.yashmerino.ecommerce.kafka.events.PaymentRequestedEvent;
-import org.springframework.kafka.core.KafkaTemplate;
+import com.yashmerino.ecommerce.outbox.OutboxService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,16 +13,15 @@ public class PaymentEventProducer {
     /**
      * Kafka template used to send events.
      */
-    private final KafkaTemplate<String, PaymentRequestedEvent> kafkaTemplate;
+    private final OutboxService outboxService;
 
     /**
      * Constructor to inject dependencies.
      *
-     * @param kafkaTemplate is the kafka template used to send events.
+     * @param outboxService persists events for asynchronous publishing.
      */
-    public PaymentEventProducer(
-            KafkaTemplate<String, PaymentRequestedEvent> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public PaymentEventProducer(OutboxService outboxService) {
+        this.outboxService = outboxService;
     }
 
     /**
@@ -31,6 +30,8 @@ public class PaymentEventProducer {
      * @param event is the Kafka event object.
      */
     public void sendPaymentRequested(PaymentRequestedEvent event) {
-        kafkaTemplate.send("payment.requested", event.orderId().toString(), event);
+        outboxService.enqueue(
+            event.eventId(), "payment.requested", event.orderId().toString(), event
+        );
     }
 }

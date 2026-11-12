@@ -11,6 +11,7 @@ import com.yashmerino.ecommerce.utils.PaymentStatus;
  * @param errorMessage is the error message if payment failed.
  */
 public record PaymentResultEvent(
+        String eventId,
         Long orderId,
         Long paymentId,
         PaymentStatus status,

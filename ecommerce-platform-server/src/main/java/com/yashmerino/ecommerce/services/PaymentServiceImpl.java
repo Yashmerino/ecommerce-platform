@@ -37,9 +37,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 
 /**
  * Implementation for payment service.
@@ -93,18 +93,10 @@ public class PaymentServiceImpl implements PaymentService {
         payment = paymentRepository.saveAndFlush(payment);
 
         PaymentRequestedEvent event = new PaymentRequestedEvent(
-                payment.getId(), orderId, order.getTotalAmount(), paymentDTO.getStripeToken(), idempotencyKey
+                UUID.randomUUID().toString(), payment.getId(), orderId,
+                order.getTotalAmount(), paymentDTO.getStripeToken(), idempotencyKey
         );
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    paymentEventProducer.sendPaymentRequested(event);
-                }
-            });
-        } else {
-            paymentEventProducer.sendPaymentRequested(event);
-        }
+        paymentEventProducer.sendPaymentRequested(event);
     }
 
     private void ensureSameOrder(Payment payment, Long orderId) {

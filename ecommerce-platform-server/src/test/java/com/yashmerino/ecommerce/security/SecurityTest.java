@@ -50,12 +50,12 @@ class SecurityTest {
 
     /**
      * Test that any endpoint and request that is not specified in {@link SecurityConfig}
-     * is secured and throws unauthorized it requested without JWT Token.
+     * is secured and responds with 401 when requested without a JWT token.
      *
      * @throws Exception if something goes wrong.
      */
     @Test
     void anyRequestIsSecuredTest() throws Exception {
-        mvc.perform(delete("/api/cartItem/1")).andExpect(status().isForbidden());
+        mvc.perform(delete("/api/cartItem/1")).andExpect(status().isUnauthorized());
     }
 }

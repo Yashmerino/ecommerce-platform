@@ -4,12 +4,12 @@ import com.yashmerino.ecommerce.kafka.events.NotificationRequestedEvent;
 import com.yashmerino.ecommerce.kafka.events.PaymentResultEvent;
 import com.yashmerino.ecommerce.model.Payment;
 import com.yashmerino.ecommerce.model.User;
+import com.yashmerino.ecommerce.outbox.OutboxService;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import com.yashmerino.ecommerce.utils.ContactType;
 import com.yashmerino.ecommerce.utils.NotificationType;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
 import lombok.AllArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class NotificationEventProducer {
     /**
      * Kafka template used to send events.
      */
-    private final KafkaTemplate<String, NotificationRequestedEvent> kafkaTemplate;
+    private final OutboxService outboxService;
 
     /**
      * Sends a payment notification request event to Kafka topic.
@@ -57,7 +57,9 @@ public class NotificationEventProducer {
                         payload
                 );
 
-        kafkaTemplate.send("notification.requested", notificationRequestedEvent);
+        outboxService.enqueue(
+            "notification.requested", event.paymentId().toString(), notificationRequestedEvent
+        );
     }
 
     /**
@@ -72,6 +74,6 @@ public class NotificationEventProducer {
                         null
                 );
 
-        kafkaTemplate.send("notification.requested", notificationRequestedEvent);
+        outboxService.enqueue("notification.requested", email, notificationRequestedEvent);
     }
 }

@@ -1,6 +1,7 @@
 package com.yashmerino.ecommerce.kafka;
 
 import com.yashmerino.ecommerce.kafka.events.PaymentResultEvent;
+import com.yashmerino.ecommerce.inbox.InboxEventRepository;
 import com.yashmerino.ecommerce.model.Payment;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
@@ -26,18 +27,21 @@ class PaymentEventListenerTest {
     @Mock
     private PaymentRepository paymentRepository;
 
+    @Mock
+    private InboxEventRepository inboxEventRepository;
+
     private PaymentEventListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new PaymentEventListener(notificationEventProducer, paymentRepository);
+        listener = new PaymentEventListener(notificationEventProducer, paymentRepository, inboxEventRepository);
     }
 
     @Test
     void testOnPaymentRequestedSuccessfulUpdate() {
         Long orderId = 1L;
         Long paymentId = 100L;
-        PaymentResultEvent event = new PaymentResultEvent(orderId, paymentId, PaymentStatus.SUCCEEDED, null);
+        PaymentResultEvent event = new PaymentResultEvent("result-1", orderId, paymentId, PaymentStatus.SUCCEEDED, null);
 
         Payment payment = new Payment();
         payment.setId(paymentId);
@@ -48,6 +52,7 @@ class PaymentEventListenerTest {
 
         listener.onPaymentRequested(event);
 
+        verify(inboxEventRepository).saveAndFlush(any());
         verify(paymentRepository).save(payment);
         verify(notificationEventProducer).sendPaymentNotificationRequested(event);
     }
@@ -56,28 +61,44 @@ class PaymentEventListenerTest {
     void testOnPaymentRequestedPaymentNotFound() {
         Long orderId = 1L;
         Long paymentId = 100L;
-        PaymentResultEvent event = new PaymentResultEvent(orderId, paymentId, PaymentStatus.SUCCEEDED, null);
+        PaymentResultEvent event = new PaymentResultEvent("result-2", orderId, paymentId, PaymentStatus.SUCCEEDED, null);
 
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.empty());
 
-        listener.onPaymentRequested(event);
+        org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalStateException.class, () -> listener.onPaymentRequested(event)
+        );
 
         verify(paymentRepository, never()).save(any());
-        verify(notificationEventProducer).sendPaymentNotificationRequested(event);
+        verify(notificationEventProducer, never()).sendPaymentNotificationRequested(any());
     }
 
     @Test
     void testOnPaymentRequestedWithException() {
         Long orderId = 1L;
         Long paymentId = 100L;
-        PaymentResultEvent event = new PaymentResultEvent(orderId, paymentId, PaymentStatus.FAILED, "Error");
+        PaymentResultEvent event = new PaymentResultEvent("result-3", orderId, paymentId, PaymentStatus.FAILED, "Error");
 
         when(paymentRepository.findById(paymentId)).thenThrow(new RuntimeException("Database error"));
 
-        // Should not throw exception, just log error
-        listener.onPaymentRequested(event);
+        org.junit.jupiter.api.Assertions.assertThrows(
+            RuntimeException.class, () -> listener.onPaymentRequested(event)
+        );
 
         verify(paymentRepository, never()).save(any());
         verify(notificationEventProducer, never()).sendPaymentNotificationRequested(any());
+    }
+
+    @Test
+    void testDuplicatePaymentResultIsIgnored() {
+        PaymentResultEvent event = new PaymentResultEvent(
+                "result-duplicate", 1L, 100L, PaymentStatus.SUCCEEDED, null
+        );
+        when(inboxEventRepository.existsById(event.eventId())).thenReturn(true);
+
+        listener.onPaymentRequested(event);
+
+        verify(inboxEventRepository, never()).saveAndFlush(any());
+        verifyNoInteractions(paymentRepository, notificationEventProducer);
     }
 }

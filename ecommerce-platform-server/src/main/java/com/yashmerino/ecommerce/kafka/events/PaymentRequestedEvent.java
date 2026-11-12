@@ -12,6 +12,7 @@ import java.math.BigDecimal;
  * @param idempotencyKey is the key used to deduplicate the payment request.
  */
 public record PaymentRequestedEvent(
+        String eventId,
         Long paymentId,
         Long orderId,
         BigDecimal amount,

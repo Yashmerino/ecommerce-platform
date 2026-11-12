@@ -31,6 +31,7 @@ class PaymentEventListenerTest {
     @Test
     void testOnPaymentRequestedCallsPaymentService() {
         PaymentRequestedEvent event = new PaymentRequestedEvent(
+            "request-100",
                 100L,
                 1L,
                 BigDecimal.valueOf(99.99),

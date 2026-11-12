@@ -2,15 +2,17 @@ package com.yashmerino.ecommerce.service.impl;
 
 import com.yashmerino.ecommerce.kafka.PaymentResultProducer;
 import com.yashmerino.ecommerce.kafka.events.PaymentRequestedEvent;
+import com.yashmerino.ecommerce.inbox.InboxEvent;
+import com.yashmerino.ecommerce.inbox.InboxEventRepository;
 import com.yashmerino.ecommerce.model.Payment;
 import com.yashmerino.ecommerce.model.stripe.StripePaymentResult;
 import com.yashmerino.ecommerce.repository.PaymentRepository;
 import com.yashmerino.ecommerce.service.PaymentService;
 import com.yashmerino.ecommerce.service.StripePaymentService;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,6 +38,8 @@ public class PaymentServiceImpl implements PaymentService {
      */
     private final PaymentResultProducer resultProducer;
 
+    private final InboxEventRepository inboxEventRepository;
+
     /**
      * Processes the payment.
      *
@@ -44,41 +48,39 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void processPayment(PaymentRequestedEvent event) {
+        String eventId = event.eventId() != null
+            ? event.eventId()
+            : "payment-request:" + event.paymentId();
+        if (inboxEventRepository.existsById(eventId)) {
+            log.info("Ignoring duplicate payment request event {}", eventId);
+            return;
+        }
+        inboxEventRepository.saveAndFlush(new InboxEvent(eventId, "payment.requested"));
+
         if (paymentRepository.findByPaymentId(event.paymentId()).isPresent()) {
             log.info("Ignoring duplicate payment event for server payment ID {}", event.paymentId());
             return;
         }
 
+        StripePaymentResult result;
         try {
-            StripePaymentResult result =
-                    stripeService.charge(
-                            event.amount(),
-                            "EUR",
-                    event.stripeToken(),
-                    event.idempotencyKey()
-                    );
-
-            Payment payment = new Payment(
-                    event.paymentId(),
-                    event.orderId(),
-                    result.getPaymentIntentId(),
-                    event.amount(),
-                    PaymentStatus.SUCCEEDED
+            result = stripeService.charge(
+                event.amount(), "EUR", event.stripeToken(), event.idempotencyKey()
             );
-
-            paymentRepository.save(payment);
-
-            // Send back the original paymentId from server, not the new ID from payment-service DB
-            resultProducer.sendSucceeded(event.orderId(), event.paymentId());
-            log.info("Payment processed successfully for order with ID {} (server payment ID: {})", event.orderId(), event.paymentId());
         } catch (Exception e) {
             log.error("Payment for order with ID {} couldn't be made.", event.orderId(), e);
             paymentRepository.save(
                     new Payment(event.paymentId(), event.orderId(), null, event.amount(), PaymentStatus.FAILED)
             );
-
-            // Send back the original paymentId from server
             resultProducer.sendFailed(event.orderId(), event.paymentId(), e.getMessage());
+            return;
         }
+
+        paymentRepository.save(new Payment(
+            event.paymentId(), event.orderId(), result.getPaymentIntentId(),
+            event.amount(), PaymentStatus.SUCCEEDED
+        ));
+        resultProducer.sendSucceeded(event.orderId(), event.paymentId());
+        log.info("Payment processed successfully for order with ID {} (server payment ID: {})", event.orderId(), event.paymentId());
     }
 }

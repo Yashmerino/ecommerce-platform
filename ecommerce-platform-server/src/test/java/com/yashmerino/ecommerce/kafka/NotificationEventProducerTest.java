@@ -5,6 +5,7 @@ import com.yashmerino.ecommerce.kafka.events.PaymentResultEvent;
 import com.yashmerino.ecommerce.model.Order;
 import com.yashmerino.ecommerce.model.Payment;
 import com.yashmerino.ecommerce.model.User;
+import com.yashmerino.ecommerce.outbox.OutboxService;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import com.yashmerino.ecommerce.utils.ContactType;
 import com.yashmerino.ecommerce.utils.NotificationType;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -33,20 +33,20 @@ class NotificationEventProducerTest {
     private PaymentRepository paymentRepository;
 
     @Mock
-    private KafkaTemplate<String, NotificationRequestedEvent> kafkaTemplate;
+    private OutboxService outboxService;
 
     private NotificationEventProducer producer;
 
     @BeforeEach
     void setUp() {
-        producer = new NotificationEventProducer(paymentRepository, kafkaTemplate);
+        producer = new NotificationEventProducer(paymentRepository, outboxService);
     }
 
     @Test
     void testSendPaymentNotificationRequestedSuccess() {
         Long orderId = 1L;
         Long paymentId = 100L;
-        PaymentResultEvent event = new PaymentResultEvent(orderId, paymentId, PaymentStatus.SUCCEEDED, null);
+        PaymentResultEvent event = new PaymentResultEvent("result-1", orderId, paymentId, PaymentStatus.SUCCEEDED, null);
 
         User user = new User();
         user.setEmail("test@example.com");
@@ -64,7 +64,7 @@ class NotificationEventProducerTest {
         producer.sendPaymentNotificationRequested(event);
 
         ArgumentCaptor<NotificationRequestedEvent> eventCaptor = ArgumentCaptor.forClass(NotificationRequestedEvent.class);
-        verify(kafkaTemplate).send(eq("notification.requested"), eventCaptor.capture());
+        verify(outboxService).enqueue(eq("notification.requested"), eq(paymentId.toString()), eventCaptor.capture());
 
         NotificationRequestedEvent capturedEvent = eventCaptor.getValue();
         assertEquals(NotificationType.PAYMENT_SUCCESS, capturedEvent.notificationType());
@@ -77,7 +77,7 @@ class NotificationEventProducerTest {
     void testSendPaymentNotificationRequestedFailed() {
         Long orderId = 1L;
         Long paymentId = 100L;
-        PaymentResultEvent event = new PaymentResultEvent(orderId, paymentId, PaymentStatus.FAILED, "Error");
+        PaymentResultEvent event = new PaymentResultEvent("result-2", orderId, paymentId, PaymentStatus.FAILED, "Error");
 
         User user = new User();
         user.setEmail("test@example.com");
@@ -95,7 +95,7 @@ class NotificationEventProducerTest {
         producer.sendPaymentNotificationRequested(event);
 
         ArgumentCaptor<NotificationRequestedEvent> eventCaptor = ArgumentCaptor.forClass(NotificationRequestedEvent.class);
-        verify(kafkaTemplate).send(eq("notification.requested"), eventCaptor.capture());
+        verify(outboxService).enqueue(eq("notification.requested"), eq(paymentId.toString()), eventCaptor.capture());
 
         NotificationRequestedEvent capturedEvent = eventCaptor.getValue();
         assertEquals(NotificationType.PAYMENT_FAILED, capturedEvent.notificationType());
@@ -105,13 +105,13 @@ class NotificationEventProducerTest {
     void testSendPaymentNotificationRequestedPaymentNotFound() {
         Long orderId = 1L;
         Long paymentId = 100L;
-        PaymentResultEvent event = new PaymentResultEvent(orderId, paymentId, PaymentStatus.SUCCEEDED, null);
+        PaymentResultEvent event = new PaymentResultEvent("result-3", orderId, paymentId, PaymentStatus.SUCCEEDED, null);
 
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.empty());
 
         producer.sendPaymentNotificationRequested(event);
 
-        verify(kafkaTemplate, never()).send(anyString(), any());
+        verifyNoInteractions(outboxService);
     }
 
     @Test
@@ -121,7 +121,7 @@ class NotificationEventProducerTest {
         producer.sendWelcomeNotificationRequested(email);
 
         ArgumentCaptor<NotificationRequestedEvent> eventCaptor = ArgumentCaptor.forClass(NotificationRequestedEvent.class);
-        verify(kafkaTemplate).send(eq("notification.requested"), eventCaptor.capture());
+        verify(outboxService).enqueue(eq("notification.requested"), eq(email), eventCaptor.capture());
 
         NotificationRequestedEvent capturedEvent = eventCaptor.getValue();
         assertEquals(NotificationType.USER_REGISTERED, capturedEvent.notificationType());

@@ -2,11 +2,14 @@ package com.yashmerino.ecommerce.kafka;
 
 import com.yashmerino.ecommerce.kafka.events.PaymentResultEvent;
 import com.yashmerino.ecommerce.model.Payment;
+import com.yashmerino.ecommerce.inbox.InboxEvent;
+import com.yashmerino.ecommerce.inbox.InboxEventRepository;
 import com.yashmerino.ecommerce.repositories.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Kafka payment events listener.
@@ -26,6 +29,8 @@ public class PaymentEventListener {
      */
     private final PaymentRepository paymentRepository;
 
+    private final InboxEventRepository inboxEventRepository;
+
     /**
      * When payment result read - update payment status and send notification event to Kafka notification topic.
      *
@@ -35,22 +40,23 @@ public class PaymentEventListener {
         topics = "payment.result",
         groupId = "main-server"
     )
+    @Transactional
     public void onPaymentRequested(PaymentResultEvent event) {
-        try {
-            // Update payment status on server (using paymentId sent from server to payment-service)
-            Payment payment = paymentRepository.findById(event.paymentId()).orElse(null);
-            if (payment != null) {
-                payment.setStatus(event.status());
-                paymentRepository.save(payment);
-                log.info("Payment status updated to {} for payment ID {} (order ID {})", event.status(), event.paymentId(), event.orderId());
-            } else {
-                log.warn("Payment not found for payment ID {} (order ID {})", event.paymentId(), event.orderId());
-            }
-
-            // Send notification
-            notificationEventProducer.sendPaymentNotificationRequested(event);
-        } catch (Exception e) {
-            log.error("Payment couldn't be processed.", e);
+        String eventId = event.eventId() != null
+                ? event.eventId()
+                : "payment-result:" + event.paymentId() + ":" + event.status();
+        if (inboxEventRepository.existsById(eventId)) {
+            log.info("Ignoring duplicate payment result event {}", eventId);
+            return;
         }
+
+        inboxEventRepository.saveAndFlush(new InboxEvent(eventId, "payment.result"));
+
+        Payment payment = paymentRepository.findById(event.paymentId())
+                .orElseThrow(() -> new IllegalStateException("payment_not_found:" + event.paymentId()));
+        payment.setStatus(event.status());
+        paymentRepository.save(payment);
+        notificationEventProducer.sendPaymentNotificationRequested(event);
+        log.info("Payment status updated to {} for payment ID {} (order ID {})", event.status(), event.paymentId(), event.orderId());
     }
 }

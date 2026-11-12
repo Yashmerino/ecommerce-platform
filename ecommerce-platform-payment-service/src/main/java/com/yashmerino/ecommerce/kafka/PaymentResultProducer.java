@@ -1,10 +1,12 @@
 package com.yashmerino.ecommerce.kafka;
 
 import com.yashmerino.ecommerce.kafka.events.PaymentResultEvent;
+import com.yashmerino.ecommerce.outbox.OutboxService;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 /**
  * Kafka component that sends payment result event to topic.
@@ -16,7 +18,7 @@ public class PaymentResultProducer {
     /**
      * Kafka template.
      */
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final OutboxService outboxService;
 
     /**
      * Sends a successful event on kafka topic.
@@ -25,10 +27,10 @@ public class PaymentResultProducer {
      * @param paymentId is the payment ID.
      */
     public void sendSucceeded(Long orderId, Long paymentId) {
-        kafkaTemplate.send(
-                "payment.result",
-            new PaymentResultEvent(orderId, paymentId, PaymentStatus.SUCCEEDED, null)
+        PaymentResultEvent event = new PaymentResultEvent(
+            UUID.randomUUID().toString(), orderId, paymentId, PaymentStatus.SUCCEEDED, null
         );
+        outboxService.enqueue(event.eventId(), "payment.result", paymentId.toString(), event);
     }
 
     /**
@@ -39,9 +41,9 @@ public class PaymentResultProducer {
      * @param errorMessage is the error message.
      */
     public void sendFailed(Long orderId, Long paymentId, String errorMessage) {
-        kafkaTemplate.send(
-            "payment.result",
-            new PaymentResultEvent(orderId, paymentId, PaymentStatus.FAILED, errorMessage)
+        PaymentResultEvent event = new PaymentResultEvent(
+            UUID.randomUUID().toString(), orderId, paymentId, PaymentStatus.FAILED, errorMessage
         );
+        outboxService.enqueue(event.eventId(), "payment.result", paymentId.toString(), event);
     }
 }
