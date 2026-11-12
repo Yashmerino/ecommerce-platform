@@ -28,12 +28,18 @@ import com.yashmerino.ecommerce.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Payments' repository.
  */
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
     Payment findByOrderId(final Long orderId);
+
+    Payment findFirstByOrderIdOrderByIdDesc(final Long orderId);
     
     Payment findFirstByOrderIdOrderByCreatedAtDesc(final Long orderId);
 }

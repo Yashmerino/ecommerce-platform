@@ -61,8 +61,10 @@ class PaymentTest {
         BigDecimal amount = new BigDecimal("150.50");
         PaymentStatus status = PaymentStatus.SUCCEEDED;
 
-        Payment newPayment = new Payment(orderId, stripeId, amount, status);
+        Long paymentId = 22L;
+        Payment newPayment = new Payment(paymentId, orderId, stripeId, amount, status);
 
+        assertEquals(paymentId, newPayment.getPaymentId());
         assertEquals(orderId, newPayment.getOrderId());
         assertEquals(stripeId, newPayment.getStripePaymentId());
         assertEquals(amount, newPayment.getAmount());

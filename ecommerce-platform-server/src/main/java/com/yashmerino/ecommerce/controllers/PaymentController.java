@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * Payments controller.
@@ -54,8 +56,11 @@ public class PaymentController {
             @ApiResponse(responseCode = SwaggerHttpStatus.INTERNAL_SERVER_ERROR, description = SwaggerMessages.INTERNAL_SERVER_ERROR,
                     content = @Content)})
     @PostMapping("/{orderId}")
-    public ResponseEntity<SuccessDTO> pay(@PathVariable Long orderId, @Validated @RequestBody PaymentDTO paymentDTO) {
-        this.paymentService.pay(orderId, paymentDTO);
+        public ResponseEntity<SuccessDTO> pay(
+                        @PathVariable Long orderId,
+                        @RequestHeader("Idempotency-Key") @NotBlank @Size(max = 255) String idempotencyKey,
+                        @Validated @RequestBody PaymentDTO paymentDTO) {
+        this.paymentService.pay(orderId, paymentDTO, idempotencyKey);
 
         SuccessDTO successDTO = new SuccessDTO();
         successDTO.setStatus(200);

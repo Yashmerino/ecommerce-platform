@@ -34,7 +34,8 @@ class PaymentEventListenerTest {
                 100L,
                 1L,
                 BigDecimal.valueOf(99.99),
-                "tok_visa"
+                "tok_visa",
+                "test-payment-key"
         );
 
         listener.onPaymentRequested(event);

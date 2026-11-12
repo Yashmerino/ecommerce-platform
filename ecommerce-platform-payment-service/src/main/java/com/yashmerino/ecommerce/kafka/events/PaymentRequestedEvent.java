@@ -9,10 +9,12 @@ import java.math.BigDecimal;
  * @param orderId is the order's ID from main server.
  * @param amount is the amount of the payment.
  * @param stripeToken is the stripe token.
+ * @param idempotencyKey is the key used to deduplicate the payment request.
  */
 public record PaymentRequestedEvent(
         Long paymentId,
         Long orderId,
         BigDecimal amount,
-        String stripeToken
+        String stripeToken,
+        String idempotencyKey
 ) {}

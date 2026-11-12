@@ -33,7 +33,7 @@ class StripePaymentServiceImplTest {
     void testChargeThrowsExceptionWithInvalidParameters() {
         // Test with null parameters should throw exception
         assertThrows(Exception.class, () -> {
-            stripePaymentService.charge(null, "usd", "pm_test");
+            stripePaymentService.charge(null, "usd", "pm_test", "payment-1");
         });
     }
 
@@ -46,7 +46,7 @@ class StripePaymentServiceImplTest {
         String paymentMethodId = "pm_card_visa";
 
         try {
-            StripePaymentResult result = stripePaymentService.charge(amount, currency, paymentMethodId);
+            StripePaymentResult result = stripePaymentService.charge(amount, currency, paymentMethodId, "payment-1");
             // If Stripe is not configured, this will throw an exception
             // In a real test, we would mock the Stripe API
         } catch (Exception e) {

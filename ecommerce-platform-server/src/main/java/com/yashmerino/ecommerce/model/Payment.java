@@ -23,6 +23,12 @@ import java.math.BigDecimal;
 public class Payment extends BaseEntity {
 
     /**
+     * Client-provided key used to deduplicate payment requests.
+     */
+    @Column(name = "idempotency_key", unique = true, length = 255)
+    private String idempotencyKey;
+
+    /**
      * Payment's order ID.
      */
     @JsonBackReference

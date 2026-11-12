@@ -61,15 +61,16 @@ class PaymentServiceImplTest {
         payment.setAmount(totalAmount);
         payment.setStatus(PaymentStatus.PENDING);
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        when(orderRepository.findByIdForUpdate(orderId)).thenReturn(Optional.of(order));
+        when(paymentRepository.saveAndFlush(any(Payment.class))).thenReturn(payment);
 
         PaymentDTO paymentDTO = new PaymentDTO();
         paymentDTO.setStripeToken(stripeToken);
+        String idempotencyKey = "test-payment-key";
 
-        paymentService.pay(orderId, paymentDTO);
+        paymentService.pay(orderId, paymentDTO, idempotencyKey);
 
-        verify(paymentRepository).save(any(Payment.class));
+        verify(paymentRepository).saveAndFlush(any(Payment.class));
         
         ArgumentCaptor<PaymentRequestedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentRequestedEvent.class);
         verify(paymentEventProducer).sendPaymentRequested(eventCaptor.capture());
@@ -79,6 +80,7 @@ class PaymentServiceImplTest {
         assertEquals(orderId, capturedEvent.orderId());
         assertEquals(totalAmount, capturedEvent.amount());
         assertEquals(stripeToken, capturedEvent.stripeToken());
+        assertEquals(idempotencyKey, capturedEvent.idempotencyKey());
     }
 
     @Test
@@ -87,13 +89,50 @@ class PaymentServiceImplTest {
         PaymentDTO paymentDTO = new PaymentDTO();
         paymentDTO.setStripeToken("tok_visa");
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+        when(orderRepository.findByIdForUpdate(orderId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> {
-            paymentService.pay(orderId, paymentDTO);
+            paymentService.pay(orderId, paymentDTO, "test-payment-key");
         });
 
         verify(paymentRepository, never()).save(any());
+        verify(paymentEventProducer, never()).sendPaymentRequested(any());
+    }
+
+    @Test
+    void testDuplicateIdempotencyKeyDoesNotCreateAnotherPayment() {
+        Long orderId = 1L;
+        String idempotencyKey = "test-payment-key";
+        Order order = new Order();
+        order.setId(orderId);
+        Payment existingPayment = new Payment();
+        existingPayment.setOrder(order);
+        when(paymentRepository.findByIdempotencyKey(idempotencyKey)).thenReturn(Optional.of(existingPayment));
+
+        paymentService.pay(orderId, new PaymentDTO(), idempotencyKey);
+
+        verify(paymentRepository, never()).saveAndFlush(any(Payment.class));
+        verifyNoInteractions(orderRepository, paymentEventProducer);
+    }
+
+    @Test
+        void testDifferentKeyDoesNotStartPaymentWhileOrderPaymentIsPending() {
+        Long orderId = 1L;
+        String idempotencyKey = "test-payment-key";
+        Order order = new Order();
+        order.setId(orderId);
+        order.setTotalAmount(BigDecimal.TEN);
+        Payment existingPayment = new Payment();
+        existingPayment.setOrder(order);
+        existingPayment.setStatus(PaymentStatus.PENDING);
+        when(paymentRepository.findByIdempotencyKey(idempotencyKey))
+            .thenReturn(Optional.empty());
+        when(orderRepository.findByIdForUpdate(orderId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findFirstByOrderIdOrderByIdDesc(orderId)).thenReturn(existingPayment);
+
+        paymentService.pay(orderId, new PaymentDTO(), idempotencyKey);
+
+        verify(paymentRepository, never()).saveAndFlush(any(Payment.class));
         verify(paymentEventProducer, never()).sendPaymentRequested(any());
     }
 }

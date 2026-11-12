@@ -3,6 +3,7 @@ package com.yashmerino.ecommerce.service.impl;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.net.RequestOptions;
 import com.yashmerino.ecommerce.model.stripe.StripePaymentResult;
 import com.yashmerino.ecommerce.service.StripePaymentService;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,8 @@ public class StripePaymentServiceImpl implements StripePaymentService {
     public StripePaymentResult charge(
             BigDecimal amount,
             String currency,
-            String paymentMethodId) throws StripeException {
+            String paymentMethodId,
+            String idempotencyKey) throws StripeException {
 
         PaymentIntentCreateParams params =
             PaymentIntentCreateParams.builder()
@@ -47,7 +49,10 @@ public class StripePaymentServiceImpl implements StripePaymentService {
                 )
                 .build();
 
-        PaymentIntent intent = PaymentIntent.create(params);
+        RequestOptions requestOptions = RequestOptions.builder()
+            .setIdempotencyKey(idempotencyKey)
+            .build();
+        PaymentIntent intent = PaymentIntent.create(params, requestOptions);
 
         return new StripePaymentResult(intent.getId(), intent.getStatus());
     }

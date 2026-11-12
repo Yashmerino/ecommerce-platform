@@ -34,7 +34,12 @@ import com.yashmerino.ecommerce.services.interfaces.PaymentService;
 import com.yashmerino.ecommerce.utils.PaymentStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Implementation for payment service.
@@ -65,13 +70,46 @@ public class PaymentServiceImpl implements PaymentService {
      * @param paymentDTO is the payment's DTO.
      */
     @Override
-    public void pay(Long orderId, PaymentDTO paymentDTO) {
-        Order order = this.orderRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("order_not_found"));
+    @Transactional
+    public void pay(Long orderId, PaymentDTO paymentDTO, String idempotencyKey) {
+        Payment existingPayment = paymentRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+        if (existingPayment != null) {
+            ensureSameOrder(existingPayment, orderId);
+            return;
+        }
 
-        Payment payment = new Payment(order, order.getTotalAmount(), PaymentStatus.PENDING);
-        payment = paymentRepository.save(payment);
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("order_not_found"));
+        Payment latestPayment = paymentRepository.findFirstByOrderIdOrderByIdDesc(orderId);
+        if (latestPayment != null && latestPayment.getStatus() != PaymentStatus.FAILED) {
+            return;
+        }
 
-        PaymentRequestedEvent event = new PaymentRequestedEvent(payment.getId(), orderId, order.getTotalAmount(), paymentDTO.getStripeToken());
-        paymentEventProducer.sendPaymentRequested(event);
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setAmount(order.getTotalAmount());
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setIdempotencyKey(idempotencyKey);
+        payment = paymentRepository.saveAndFlush(payment);
+
+        PaymentRequestedEvent event = new PaymentRequestedEvent(
+                payment.getId(), orderId, order.getTotalAmount(), paymentDTO.getStripeToken(), idempotencyKey
+        );
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    paymentEventProducer.sendPaymentRequested(event);
+                }
+            });
+        } else {
+            paymentEventProducer.sendPaymentRequested(event);
+        }
+    }
+
+    private void ensureSameOrder(Payment payment, Long orderId) {
+        if (!payment.getOrder().getId().equals(orderId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "idempotency_key_reused");
+        }
     }
 }

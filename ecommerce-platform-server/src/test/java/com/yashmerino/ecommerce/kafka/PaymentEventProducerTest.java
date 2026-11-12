@@ -36,7 +36,8 @@ class PaymentEventProducerTest {
                 100L,
                 1L,
                 BigDecimal.valueOf(99.99),
-                "tok_visa"
+                "tok_visa",
+                "test-payment-key"
         );
 
         producer.sendPaymentRequested(event);

@@ -91,9 +91,10 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "user", authorities = {"USER"})
     void sendPayEventTest() throws Exception {
-        doNothing().when(paymentService).pay(anyLong(), any(PaymentDTO.class));
+        doNothing().when(paymentService).pay(anyLong(), any(PaymentDTO.class), anyString());
 
         mvc.perform(post("/api/payment/1")
+            .header("Idempotency-Key", "test-payment-key")
                 .content(objectMapper.writeValueAsString(paymentDTO)).contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
@@ -109,5 +110,14 @@ class PaymentControllerTest {
     @WithMockUser(username = "seller", authorities = {"SELLER"})
     void sendPayEventAsSellerTest() throws Exception {
         mvc.perform(post("/api/payment/1")).andExpect(status().isForbidden()).andReturn();
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = {"USER"})
+    void sendPayEventWithoutIdempotencyKeyTest() throws Exception {
+        mvc.perform(post("/api/payment/1")
+                        .content(objectMapper.writeValueAsString(paymentDTO))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -22,6 +22,12 @@ import java.math.BigDecimal;
 public class Payment extends BaseEntity {
 
     /**
+     * Payment ID assigned by the server, used as the idempotency key.
+     */
+    @Column(name = "payment_id", unique = true)
+    private Long paymentId;
+
+    /**
      * Payment's order ID.
      */
     private Long orderId;

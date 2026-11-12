@@ -44,15 +44,22 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void processPayment(PaymentRequestedEvent event) {
+        if (paymentRepository.findByPaymentId(event.paymentId()).isPresent()) {
+            log.info("Ignoring duplicate payment event for server payment ID {}", event.paymentId());
+            return;
+        }
+
         try {
             StripePaymentResult result =
                     stripeService.charge(
                             event.amount(),
                             "EUR",
-                            event.stripeToken()
+                    event.stripeToken(),
+                    event.idempotencyKey()
                     );
 
             Payment payment = new Payment(
+                    event.paymentId(),
                     event.orderId(),
                     result.getPaymentIntentId(),
                     event.amount(),
@@ -67,7 +74,7 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (Exception e) {
             log.error("Payment for order with ID {} couldn't be made.", event.orderId(), e);
             paymentRepository.save(
-                    new Payment(event.orderId(), null, event.amount(), PaymentStatus.FAILED)
+                    new Payment(event.paymentId(), event.orderId(), null, event.amount(), PaymentStatus.FAILED)
             );
 
             // Send back the original paymentId from server

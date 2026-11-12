@@ -31,7 +31,24 @@ export interface PaymentRequest {
 }
 
 export const processPayment = async (orderId: number, paymentData: PaymentRequest): Promise<any> => {
-    const response = await authenticatedPost(`${API_BASE_URL}/api/payment/${orderId}`, paymentData);
+  const storageKey = `payment-idempotency:${orderId}`;
+  let idempotencyKey = sessionStorage.getItem(storageKey);
+  if (!idempotencyKey) {
+    idempotencyKey = typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem(storageKey, idempotencyKey);
+  }
+
+  const response = await authenticatedPost(
+    `${API_BASE_URL}/api/payment/${orderId}`,
+    paymentData,
+    { headers: { "Idempotency-Key": idempotencyKey } }
+  );
+
+  if (response.ok) {
+    sessionStorage.removeItem(storageKey);
+  }
 
     if (!response.ok) {
         return response;

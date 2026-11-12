@@ -21,5 +21,5 @@ public interface StripePaymentService {
      *
      * @throws StripeException if payment failed.
      */
-    StripePaymentResult charge(BigDecimal amount, String currency, String paymentMethodId) throws StripeException;
+    StripePaymentResult charge(BigDecimal amount, String currency, String paymentMethodId, String idempotencyKey) throws StripeException;
 }

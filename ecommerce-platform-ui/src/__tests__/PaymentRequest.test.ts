@@ -8,6 +8,7 @@ const mockAuthenticatedPost = AuthInterceptor.authenticatedPost as jest.MockedFu
 describe('PaymentRequest', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        sessionStorage.clear();
     });
 
     describe('processPayment', () => {
@@ -33,7 +34,8 @@ describe('PaymentRequest', () => {
 
             expect(mockAuthenticatedPost).toHaveBeenCalledWith(
                 expect.stringContaining('/api/payment/1'),
-                paymentData
+                paymentData,
+                { headers: { "Idempotency-Key": expect.any(String) } }
             );
             expect(result).toEqual({ success: true, paymentId: 100 });
         });
@@ -57,6 +59,12 @@ describe('PaymentRequest', () => {
 
             expect(result.ok).toBe(false);
             expect(result.status).toBe(402);
+            const firstKey = mockAuthenticatedPost.mock.calls[0][2]?.headers as Record<string, string>;
+
+            await processPayment(orderId, paymentData);
+
+            const retryKey = mockAuthenticatedPost.mock.calls[1][2]?.headers as Record<string, string>;
+            expect(retryKey["Idempotency-Key"]).toBe(firstKey["Idempotency-Key"]);
         });
     });
 });

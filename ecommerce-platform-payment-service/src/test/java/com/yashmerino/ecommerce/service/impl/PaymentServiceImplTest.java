@@ -51,15 +51,15 @@ class PaymentServiceImplTest {
         BigDecimal amount = new BigDecimal("99.99");
         String stripeToken = "pm_1234567890";
 
-        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken);
+        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken, paymentId.toString());
         StripePaymentResult stripeResult = new StripePaymentResult("pi_success_123", "succeeded");
 
-        when(stripePaymentService.charge(amount, "EUR", stripeToken))
+        when(stripePaymentService.charge(amount, "EUR", stripeToken, paymentId.toString()))
                 .thenReturn(stripeResult);
 
         paymentService.processPayment(event);
 
-        verify(stripePaymentService).charge(amount, "EUR", stripeToken);
+        verify(stripePaymentService).charge(amount, "EUR", stripeToken, paymentId.toString());
         verify(paymentRepository).save(any(Payment.class));
         verify(resultProducer).sendSucceeded(orderId, paymentId);
         verify(resultProducer, never()).sendFailed(anyLong(), anyLong(), anyString());
@@ -68,6 +68,7 @@ class PaymentServiceImplTest {
         verify(paymentRepository).save(paymentCaptor.capture());
 
         Payment savedPayment = paymentCaptor.getValue();
+        assertEquals(paymentId, savedPayment.getPaymentId());
         assertEquals(orderId, savedPayment.getOrderId());
         assertEquals("pi_success_123", savedPayment.getStripePaymentId());
         assertEquals(amount, savedPayment.getAmount());
@@ -82,15 +83,15 @@ class PaymentServiceImplTest {
         String stripeToken = "pm_invalid";
         String errorMessage = "Card declined";
 
-        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken);
+        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken, paymentId.toString());
 
         StripeException stripeException = new ApiConnectionException(errorMessage);
-        when(stripePaymentService.charge(amount, "EUR", stripeToken))
+        when(stripePaymentService.charge(amount, "EUR", stripeToken, paymentId.toString()))
                 .thenThrow(stripeException);
 
         paymentService.processPayment(event);
 
-        verify(stripePaymentService).charge(amount, "EUR", stripeToken);
+        verify(stripePaymentService).charge(amount, "EUR", stripeToken, paymentId.toString());
         verify(paymentRepository).save(any(Payment.class));
         verify(resultProducer).sendFailed(orderId, paymentId, errorMessage);
         verify(resultProducer, never()).sendSucceeded(anyLong(), anyLong());
@@ -109,10 +110,10 @@ class PaymentServiceImplTest {
     void testProcessPaymentWithDifferentAmounts() throws StripeException {
         // Test with small amount
         BigDecimal smallAmount = new BigDecimal("10.00");
-        PaymentRequestedEvent smallEvent = new PaymentRequestedEvent(102L, 3L, smallAmount, "pm_small");
+        PaymentRequestedEvent smallEvent = new PaymentRequestedEvent(102L, 3L, smallAmount, "pm_small", "102");
         StripePaymentResult smallResult = new StripePaymentResult("pi_small", "succeeded");
 
-        when(stripePaymentService.charge(smallAmount, "EUR", "pm_small"))
+        when(stripePaymentService.charge(smallAmount, "EUR", "pm_small", "102"))
                 .thenReturn(smallResult);
 
         paymentService.processPayment(smallEvent);
@@ -122,10 +123,10 @@ class PaymentServiceImplTest {
 
         // Test with large amount
         BigDecimal largeAmount = new BigDecimal("9999.99");
-        PaymentRequestedEvent largeEvent = new PaymentRequestedEvent(103L, 4L, largeAmount, "pm_large");
+        PaymentRequestedEvent largeEvent = new PaymentRequestedEvent(103L, 4L, largeAmount, "pm_large", "103");
         StripePaymentResult largeResult = new StripePaymentResult("pi_large", "succeeded");
 
-        when(stripePaymentService.charge(largeAmount, "EUR", "pm_large"))
+        when(stripePaymentService.charge(largeAmount, "EUR", "pm_large", "103"))
                 .thenReturn(largeResult);
 
         paymentService.processPayment(largeEvent);
@@ -140,10 +141,10 @@ class PaymentServiceImplTest {
         BigDecimal amount = new BigDecimal("149.99");
         String stripeToken = "pm_test_token";
 
-        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken);
+        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken, paymentId.toString());
         StripePaymentResult result = new StripePaymentResult("pi_test_intent", "succeeded");
 
-        when(stripePaymentService.charge(amount, "EUR", stripeToken))
+        when(stripePaymentService.charge(amount, "EUR", stripeToken, paymentId.toString()))
                 .thenReturn(result);
 
         paymentService.processPayment(event);
@@ -165,10 +166,10 @@ class PaymentServiceImplTest {
         BigDecimal amount = new BigDecimal("75.00");
         String stripeToken = "pm_runtime_error";
 
-        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken);
+        PaymentRequestedEvent event = new PaymentRequestedEvent(paymentId, orderId, amount, stripeToken, paymentId.toString());
 
         RuntimeException runtimeException = new RuntimeException("Unexpected error");
-        when(stripePaymentService.charge(amount, "EUR", stripeToken))
+        when(stripePaymentService.charge(amount, "EUR", stripeToken, paymentId.toString()))
                 .thenThrow(runtimeException);
 
         paymentService.processPayment(event);
@@ -179,5 +180,20 @@ class PaymentServiceImplTest {
         Payment failedPayment = paymentCaptor.getValue();
         assertEquals(PaymentStatus.FAILED, failedPayment.getStatus());
         assertEquals(orderId, failedPayment.getOrderId());
+    }
+
+    @Test
+    void testDuplicatePaymentIsNotChargedAgain() throws StripeException {
+        Long paymentId = 106L;
+        PaymentRequestedEvent event = new PaymentRequestedEvent(
+                paymentId, 7L, new BigDecimal("20.00"), "pm_duplicate", paymentId.toString()
+        );
+        when(paymentRepository.findByPaymentId(paymentId)).thenReturn(java.util.Optional.of(new Payment()));
+
+        paymentService.processPayment(event);
+
+        verify(stripePaymentService, never()).charge(any(), anyString(), anyString(), anyString());
+        verify(paymentRepository, never()).save(any(Payment.class));
+        verifyNoInteractions(resultProducer);
     }
 }

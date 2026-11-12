@@ -12,5 +12,5 @@ public interface PaymentService {
      * @param orderId is the payment's order ID.
      * @param paymentDTO is the payment's DTO.
      */
-    void pay(final Long orderId, PaymentDTO paymentDTO);
+    void pay(final Long orderId, PaymentDTO paymentDTO, String idempotencyKey);
 }
