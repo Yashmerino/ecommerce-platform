@@ -40,6 +40,10 @@ docker-compose down -v
 | **MySQL** | 3306 | jdbc:mysql://localhost:3306 | Database |
 | **Kafka** | 9092 | localhost:9092 | Event streaming |
 | **Redis** | 6379 | localhost:6379 | Caching & sessions |
+| **Prometheus** | 9090 | http://localhost:9090 | Spring service metrics |
+| **Grafana** | 3000 | http://localhost:3000 | Metrics dashboards |
+
+Grafana starts with the Prometheus datasource and the **Ecommerce Platform** dashboard provisioned. The local default login is `admin` / `admin`; set `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` in the environment to override it. Prometheus scrapes `/actuator/prometheus` from the server, payment, and notification services over the private Compose network.
 
 ### Request Routing
 

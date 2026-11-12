@@ -68,6 +68,52 @@ services:
       timeout: 5s
       retries: 5
 
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+    volumes:
+      - prometheus-data:/prometheus
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus/prometheus.yml
+    depends_on:
+      - ecommerce-server
+      - payment-service
+      - notification-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    configs:
+      - source: grafana-prometheus-datasource
+        target: /etc/grafana/provisioning/datasources/prometheus.yml
+      - source: grafana-dashboard-provider
+        target: /etc/grafana/provisioning/dashboards/dashboards.yml
+      - source: grafana-ecommerce-dashboard
+        target: /var/lib/grafana/dashboards/ecommerce-platform.json
+    depends_on:
+      - prometheus
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
   ecommerce-server:
     build:
       context: ../ecommerce-platform-server
@@ -81,6 +127,7 @@ services:
       - maven-cache:/root/.m2
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,prometheus
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
       # Database
@@ -127,6 +174,7 @@ services:
       - maven-cache:/root/.m2
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,prometheus
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
       # Database
@@ -171,6 +219,7 @@ services:
       - maven-cache:/root/.m2
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,prometheus
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
       # Database
@@ -190,8 +239,8 @@ services:
       # Mail
       - SPRING_MAIL_HOST=smtp.gmail.com
       - SPRING_MAIL_PORT=587
-      - SPRING_MAIL_USERNAME=YOUR_MAIL_USERNAME
-      - SPRING_MAIL_PASSWORD=YOUR_MAIL_PASSWORD
+      - SPRING_MAIL_USERNAME=YOUR_EMAIL@gmail.com
+      - SPRING_MAIL_PASSWORD=YOUR_EMAIL_PASSWORD
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
     depends_on:
@@ -220,6 +269,124 @@ services:
     networks:
       - ecommerce-network
 
+configs:
+  prometheus-config:
+    content: |
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+
+      scrape_configs:
+        - job_name: ecommerce-server
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets: [ecommerce-server:8081]
+
+        - job_name: payment-service
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets: [payment-service:8082]
+
+        - job_name: notification-service
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets: [notification-service:8083]
+
+  grafana-prometheus-datasource:
+    content: |
+      apiVersion: 1
+
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          uid: prometheus
+          access: proxy
+          url: http://prometheus:9090
+          isDefault: true
+          editable: false
+
+  grafana-dashboard-provider:
+    content: |
+      apiVersion: 1
+
+      providers:
+        - name: Ecommerce Platform
+          orgId: 1
+          folder: Ecommerce Platform
+          type: file
+          disableDeletion: false
+          editable: true
+          updateIntervalSeconds: 30
+          options:
+            path: /var/lib/grafana/dashboards
+
+  grafana-ecommerce-dashboard:
+    content: |
+      {
+        "annotations": { "list": [] },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "panels": [
+          {
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+            "id": 1,
+            "options": {
+              "legend": { "displayMode": "list", "placement": "bottom" },
+              "tooltip": { "mode": "multi" }
+            },
+            "targets": [
+              { "expr": "sum by (job) (rate(http_server_requests_seconds_count[5m]))", "legendFormat": "{{job}}", "refId": "A" }
+            ],
+            "title": "HTTP requests per second",
+            "type": "timeseries"
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "fieldConfig": { "defaults": { "unit": "B" }, "overrides": [] },
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+            "id": 2,
+            "options": {
+              "legend": { "displayMode": "list", "placement": "bottom" },
+              "tooltip": { "mode": "multi" }
+            },
+            "targets": [
+              { "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\"})", "legendFormat": "{{job}}", "refId": "A" }
+            ],
+            "title": "JVM heap used",
+            "type": "timeseries"
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+            "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+            "id": 3,
+            "options": {
+              "legend": { "displayMode": "list", "placement": "bottom" },
+              "tooltip": { "mode": "multi" }
+            },
+            "targets": [
+              { "expr": "sum by (job) (rate(http_server_requests_seconds_count{status=~\"5..\"}[5m]))", "legendFormat": "{{job}}", "refId": "A" }
+            ],
+            "title": "HTTP 5xx responses per second",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "15s",
+        "schemaVersion": 39,
+        "tags": ["ecommerce", "spring-boot"],
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "timezone": "browser",
+        "title": "Ecommerce Platform",
+        "uid": "ecommerce-platform",
+        "version": 1
+      }
+
 networks:
   ecommerce-network:
     driver: bridge
@@ -227,3 +394,5 @@ networks:
 volumes:
   mysql-data:
   maven-cache:
+  prometheus-data:
+  grafana-data:
