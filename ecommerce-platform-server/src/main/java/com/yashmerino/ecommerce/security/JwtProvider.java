@@ -53,6 +53,8 @@ public class JwtProvider {
      */
     private final ApplicationProperties applicationProperties;
 
+    private final SecureRandom secureRandom = new SecureRandom();
+
     /**
      * Constructor.
      *
@@ -119,7 +121,7 @@ public class JwtProvider {
      */
     public String generateRefreshToken() {
         byte[] randomBytes = new byte[64];
-        new SecureRandom().nextBytes(randomBytes);
+        secureRandom.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 

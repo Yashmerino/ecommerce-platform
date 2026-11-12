@@ -24,7 +24,6 @@ import {
 import Header from '../../Header';
 import Copyright from '../../footer/Copyright';
 import { useAppSelector } from '../../../hooks';
-import { useNavigate } from 'react-router-dom';
 import { getUserOrders, OrderWithPayment } from '../../../api/OrderRequest';
 import { processPayment } from '../../../api/PaymentRequest';
 import { getTranslation } from '../../../../i18n/i18n';
@@ -96,15 +95,19 @@ const MyOrdersPage = () => {
     }, [cardElement, retryDialogOpen]);
 
     React.useEffect(() => {
-        fetchOrders();
+        void fetchOrders();
     }, [page]);
 
     const fetchOrders = async () => {
-        const response = await getUserOrders(page, pageSize);
+        try {
+            const response = await getUserOrders(page, pageSize);
 
-        if ('data' in response) {
-            setOrders(response.data);
-            setTotalPages(response.totalPages);
+            if ('data' in response) {
+                setOrders(response.data);
+                setTotalPages(response.totalPages);
+            }
+        } catch (error) {
+            console.error('Failed to fetch orders:', error);
         }
     };
 
@@ -176,7 +179,7 @@ const MyOrdersPage = () => {
                 setRetryDialogOpen(false);
                 setCardHolder('');
                 isMountedRef.current = false;
-                fetchOrders();
+                void fetchOrders();
             }, 2000);
         } catch (error) {
             setRetryError('An error occurred. Please try again.');
@@ -390,7 +393,7 @@ const MyOrdersPage = () => {
                     </Button>
                     {!retrySuccess && (
                         <Button 
-                            onClick={handleRetryPayment} 
+                            onClick={() => { void handleRetryPayment(); }}
                             variant="contained" 
                             color="primary"
                             disabled={isProcessing}

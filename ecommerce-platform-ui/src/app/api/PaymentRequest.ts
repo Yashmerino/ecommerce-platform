@@ -30,13 +30,27 @@ export interface PaymentRequest {
   stripeToken: string;
 }
 
+const createIdempotencyKey = (): string => {
+  const secureCrypto = globalThis.crypto;
+  if (typeof secureCrypto?.randomUUID === "function") {
+    return secureCrypto.randomUUID();
+  }
+  if (!secureCrypto?.getRandomValues) {
+    throw new Error("A cryptographically secure random number generator is required");
+  }
+
+  const bytes = secureCrypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+};
+
 export const processPayment = async (orderId: number, paymentData: PaymentRequest): Promise<any> => {
   const storageKey = `payment-idempotency:${orderId}`;
   let idempotencyKey = sessionStorage.getItem(storageKey);
   if (!idempotencyKey) {
-    idempotencyKey = typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    idempotencyKey = createIdempotencyKey();
     sessionStorage.setItem(storageKey, idempotencyKey);
   }
 
@@ -50,9 +64,9 @@ export const processPayment = async (orderId: number, paymentData: PaymentReques
     sessionStorage.removeItem(storageKey);
   }
 
-    if (!response.ok) {
-        return response;
-    }
+  if (!response.ok) {
+    return response;
+  }
 
-    return response.json();
+  return response.json();
 };
